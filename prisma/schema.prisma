@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  MERCHANT
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+}
+
+model User {
+  id              String           @id @default(uuid())
+  name            String
+  email           String           @unique
+  role            Role             @default(CUSTOMER)
+  kycStatus       KycStatus        @default(PENDING)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  merchantProfile MerchantProfile?
+  jobsAsCustomer  Job[]            @relation("CustomerJobs")
+  jobsAsMerchant  Job[]            @relation("MerchantJobs")
+  wallets         Wallet[]
+  subscriptions   Subscription[]
+}
+
+model MerchantProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  skills            String[]
+  baseRate          Float    @default(0.0)
+  acceptanceRate    Float    @default(100.0)
+  internalAgentScore Float   @default(5.0)
+}
+
+enum JobStatus {
+  PENDING
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+}
+
+enum EscrowStatus {
+  LOCKED
+  RELEASED
+}
+
+model Job {
+  id            String       @id @default(uuid())
+  customerId    String
+  customer      User         @relation("CustomerJobs", fields: [customerId], references: [id])
+  merchantId    String?
+  merchant      User?        @relation("MerchantJobs", fields: [merchantId], references: [id])
+  status        JobStatus    @default(PENDING)
+  escrowStatus  EscrowStatus @default(LOCKED)
+  amount        Float        @default(0.0)
+  description   String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+enum WalletType {
+  EARNED
+  DEPOSITED
+}
+
+model Wallet {
+  id               String     @id @default(uuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id])
+  type             WalletType
+  availableBalance Float      @default(0.0)
+  escrowBalance    Float      @default(0.0)
+  updatedAt        DateTime   @updatedAt
+}
+
+enum SubFrequency {
+  WEEKLY
+  BIWEEKLY
+}
+
+model Subscription {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  frequency   SubFrequency @default(WEEKLY)
+  baseService String
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

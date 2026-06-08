@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@theme {
+  /* Background & Surface */
+  --color-background:                 #f8f9ff;
+  --color-surface:                    #f8f9ff;
+  --color-surface-dim:                #cbdbf5;
+  --color-surface-bright:             #f8f9ff;
+  --color-surface-container-lowest:   #ffffff;
+  --color-surface-container-low:      #eff4ff;
+  --color-surface-container:          #e5eeff;
+  --color-surface-container-high:     #dce9ff;
+  --color-surface-container-highest:  #d3e4fe;
+  --color-surface-variant:            #d3e4fe;
+  --color-surface-tint:               #395e9b;
+  --color-inverse-surface:            #213145;
+
+  /* On-Surface */
+  --color-on-surface:                 #0b1c30;
+  --color-on-surface-variant:         #434750;
+  --color-inverse-on-surface:         #eaf1ff;
+
+  /* Primary – "Trust Blue" */
+  --color-primary:                    #002d62;
+  --color-on-primary:                 #ffffff;
+  --color-primary-container:          #1a4480;
+  --color-on-primary-container:       #8fb3f6;
+  --color-primary-fixed:              #d7e2ff;
+  --color-primary-fixed-dim:          #abc7ff;
+  --color-on-primary-fixed:           #001b3f;
+  --color-on-primary-fixed-variant:   #1d4682;
+  --color-inverse-primary:            #abc7ff;
+
+  /* Secondary */
+  --color-secondary:                  #565e74;
+  --color-on-secondary:               #ffffff;
+  --color-secondary-container:        #dae2fd;
+  --color-on-secondary-container:     #5c647a;
+  --color-secondary-fixed:            #dae2fd;
+  --color-secondary-fixed-dim:        #bec6e0;
+  --color-on-secondary-fixed:         #131b2e;
+  --color-on-secondary-fixed-variant: #3f465c;
+
+  /* Tertiary – "Success Green" */
+  --color-tertiary:                   #003623;
+  --color-on-tertiary:                #ffffff;
+  --color-tertiary-container:         #004f35;
+  --color-on-tertiary-container:      #32c98f;
+  --color-tertiary-fixed:             #6ffbbe;
+  --color-tertiary-fixed-dim:         #4edea3;
+  --color-on-tertiary-fixed:          #002113;
+  --color-on-tertiary-fixed-variant:  #005236;
+
+  /* Error */
+  --color-error:                      #ba1a1a;
+  --color-on-error:                   #ffffff;
+  --color-error-container:            #ffdad6;
+  --color-on-error-container:         #93000a;
+
+  /* Outlines */
+  --color-outline:                    #737781;
+  --color-outline-variant:            #c3c6d1;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-gutter: 16px;
+  --spacing-margin: 20px;
+
+  /* Radius */
+  --radius-sm:      0.125rem;
+  --radius-default: 0.25rem;
+  --radius-md:      0.375rem;
+  --radius-lg:      0.5rem;
+  --radius-xl:      0.75rem;
+  --radius-full:    9999px;
+}
+
+@layer utilities {
+  .font-headline-lg { font-family: var(--font-inter, Inter, sans-serif); font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
+  .font-headline-md { font-family: var(--font-inter, Inter, sans-serif); font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  .font-headline-sm { font-family: var(--font-inter, Inter, sans-serif); font-size: 18px; line-height: 24px; font-weight: 600; }
+  .font-body-lg { font-family: var(--font-inter, Inter, sans-serif); font-size: 16px; line-height: 24px; font-weight: 400; }
+  .font-body-md { font-family: var(--font-inter, Inter, sans-serif); font-size: 14px; line-height: 20px; font-weight: 400; }
+  .font-label-lg { font-family: var(--font-inter, Inter, sans-serif); font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.01em; }
+  .font-label-md { font-family: var(--font-inter, Inter, sans-serif); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.02em; }
+  .font-caption { font-family: var(--font-inter, Inter, sans-serif); font-size: 11px; line-height: 14px; font-weight: 400; }
+  
+  .text-headline-lg { font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
+  .text-headline-md { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  .text-headline-sm { font-size: 18px; line-height: 24px; font-weight: 600; }
+  .text-body-lg { font-size: 16px; line-height: 24px; font-weight: 400; }
+  .text-body-md { font-size: 14px; line-height: 20px; font-weight: 400; }
+  .text-label-lg { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.01em; }
+  .text-label-md { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.02em; }
+  .text-caption { font-size: 11px; line-height: 14px; font-weight: 400; }
+}
+
+/* ─── Base styles ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ─── Smooth scroll ─── */
+html { scroll-behavior: smooth; }
+
+/* ─── Elevation helpers ─── */
+.elevation-1 { box-shadow: 0 1px 3px rgba(11,28,48,0.06); }
+.elevation-2 { box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05); }
+
+/* ─── Scrollbar hide utility ─── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
