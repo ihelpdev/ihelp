@@ -6,10 +6,10 @@ export function Header() {
       <nav className="flex items-center justify-between px-margin py-md max-w-7xl mx-auto">
         <Link href="/" className="font-headline-lg text-headline-lg font-bold text-primary hover:opacity-80 transition-opacity">i-help</Link>
         <div className="hidden md:flex items-center gap-lg">
-          <a className="text-primary font-bold border-b-2 border-primary pb-1 font-label-lg transition-all duration-200" href="#">Find Services</a>
-          <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">Explore Subscriptions</a>
-          <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">Become a Merchant</a>
-          <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">How it Works</a>
+          <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/customer/dashboard">Find Services</Link>
+          <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/explore-subscriptions">Explore Subscriptions</Link>
+          <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/become-a-merchant">Become a Merchant</Link>
+          <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/how-it-works">How it Works</Link>
         </div>
         <div className="flex items-center gap-sm">
           <Link href="/login">
