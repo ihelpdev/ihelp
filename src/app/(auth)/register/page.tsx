@@ -4,13 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
-import { CheckCircle2, UploadCloud, Camera, ArrowRight, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 function RegisterForm() {
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get("role");
   const router = useRouter();
+  const supabase = createClient();
 
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<"CUSTOMER" | "MERCHANT" | null>(null);
@@ -19,8 +20,8 @@ function RegisterForm() {
     email: "",
     password: "",
   });
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [kycStatus, setKycStatus] = useState<"pending" | "none">("none");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (defaultRole === "customer") {
@@ -33,34 +34,56 @@ function RegisterForm() {
   }, [defaultRole]);
 
   const handleNext = () => setStep((s) => s + 1);
-  const handleBack = () => setStep((s) => s - 1);
-
-  const handleOtpChange = (index: number, value: string) => {
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-    
-    // Auto focus next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
-    }
+  const handleBack = () => {
+    setErrorMsg(null);
+    setStep((s) => s - 1);
   };
 
-  const submitKyc = async () => {
+  const handleSignup = async () => {
+    setErrorMsg(null);
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          name: formData.name,
+          role: role,
+        },
+      },
+    });
+    setIsLoading(false);
+
+    if (error) {
+      console.log({error})
+      setErrorMsg(error.message);
+      return;
+    }
+
+    if (data.user) {
+      // Sync immediately so the user exists in Prisma
+      // Email verification will be handled by Supabase Auth
+      await syncUser(data.user.id);
+    }
+    
+    // Proceed to email verification instruction step
+    setStep(3);
+  };
+
+  const syncUser = async (userId: string) => {
     try {
-      const res = await fetch("/api/auth/kyc", {
+      await fetch("/api/auth/sync-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: "mock-id", documents: [] }),
+        body: JSON.stringify({
+          id: userId,
+          email: formData.email,
+          name: formData.name,
+          role: role,
+        }),
       });
-      const data = await res.json();
-      if (data.success) {
-        setKycStatus("pending");
-        handleNext(); // Move to completion
-      }
-    } catch (error) {
-      console.error("KYC Error:", error);
+    } catch (e) {
+      console.error("Failed to sync user:", e);
     }
   };
 
@@ -70,7 +93,7 @@ function RegisterForm() {
       <div className="w-full bg-surface-container h-2 mb-8 rounded-full overflow-hidden">
         <div 
           className="bg-primary h-full transition-all duration-300 ease-in-out"
-          style={{ width: `${(step / 5) * 100}%` }}
+          style={{ width: `${(step / 3) * 100}%` }}
         />
       </div>
 
@@ -124,6 +147,8 @@ function RegisterForm() {
           </button>
           <h2 className="text-headline-sm font-bold text-on-surface mb-6">Create your account</h2>
           
+          {errorMsg && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{errorMsg}</div>}
+
           <div className="space-y-5">
             <Input 
               label="Full Name" 
@@ -149,104 +174,35 @@ function RegisterForm() {
 
           <Button 
             className="w-full mt-8 py-3 text-base" 
-            disabled={!formData.name || !formData.email || !formData.password}
-            onClick={handleNext}
+            disabled={!formData.name || !formData.email || !formData.password || isLoading}
+            onClick={handleSignup}
           >
-            Create Account
+            {isLoading ? "Creating..." : "Create Account"}
           </Button>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-on-surface-variant">
+              Already have an account? <a href="/login" className="text-primary font-medium hover:underline">Log in</a>
+            </p>
+          </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="transition-all duration-500">
-          <button onClick={handleBack} className="text-sm flex items-center text-on-surface-variant mb-4 hover:text-primary font-medium transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
-          </button>
-          <h2 className="text-headline-sm font-bold text-on-surface mb-2">Verify your email</h2>
-          <p className="text-body-md text-on-surface-variant mb-6">We've sent a 6-digit code to <span className="font-semibold text-primary">{formData.email}</span>.</p>
-          
-          <div className="flex justify-between gap-2 mb-8">
-            {otp.map((digit, idx) => (
-              <input
-                key={idx}
-                id={`otp-${idx}`}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(idx, e.target.value)}
-                className="w-12 h-14 text-center text-xl font-bold rounded-lg border-2 border-outline-variant bg-surface-container-lowest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed transition-all"
-              />
-            ))}
+        <div className="transition-all duration-500 text-center py-8">
+          <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <span className="material-symbols-outlined text-primary text-4xl" style={{fontVariationSettings: "'FILL' 1"}}>mark_email_unread</span>
           </div>
-
+          <h2 className="text-headline-sm font-bold text-on-surface mb-2">Verify your email</h2>
+          <p className="text-body-md text-on-surface-variant mb-8">
+            We've sent a verification link to <span className="font-semibold text-primary">{formData.email}</span>. 
+            Please check your inbox and click the link to activate your account.
+          </p>
           <Button 
             className="w-full py-3 text-base" 
-            disabled={otp.join("").length !== 6}
-            onClick={handleNext}
+            onClick={() => router.push("/login")}
           >
-            Verify Email
-          </Button>
-          <div className="mt-6 text-center">
-            <button className="text-sm text-primary font-medium hover:underline">Resend Code</button>
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="transition-all duration-500">
-          <h2 className="text-headline-sm font-bold text-on-surface mb-2">Identity Verification</h2>
-          <p className="text-body-md text-on-surface-variant mb-6">
-            {role === "MERCHANT" 
-              ? "As a Pro, we need to verify your identity before you can accept jobs." 
-              : "Verify your identity to increase your trust score on the platform."}
-          </p>
-          
-          <div className="space-y-4 mb-8">
-            {/* ID Upload Dropzone */}
-            <div className="border-2 border-dashed border-outline-variant rounded-xl p-6 bg-surface-container-low text-center hover:bg-surface-container transition-colors cursor-pointer group">
-              <div className="mx-auto w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center mb-3 group-hover:bg-primary-fixed transition-colors">
-                <UploadCloud className="text-primary w-6 h-6" />
-              </div>
-              <h3 className="font-semibold text-on-surface mb-1">Upload Government ID</h3>
-              <p className="text-xs text-on-surface-variant">PNG, JPG or PDF (Max 5MB)</p>
-            </div>
-
-            {/* Selfie Placeholder */}
-            <div className="border-2 border-dashed border-outline-variant rounded-xl p-6 bg-surface-container-low text-center hover:bg-surface-container transition-colors cursor-pointer group">
-              <div className="mx-auto w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center mb-3 group-hover:bg-primary-fixed transition-colors">
-                <Camera className="text-primary w-6 h-6" />
-              </div>
-              <h3 className="font-semibold text-on-surface mb-1">Take a Selfie</h3>
-              <p className="text-xs text-on-surface-variant">Ensure your face is clearly visible</p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            {role === "CUSTOMER" && (
-              <Button variant="ghost" className="w-full py-3" onClick={handleNext}>
-                Skip for now
-              </Button>
-            )}
-            <Button className="w-full py-3 text-base" onClick={submitKyc}>
-              Submit for Verification
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {step === 5 && (
-        <div className="transition-all duration-500 text-center py-8">
-          <div className="mx-auto w-20 h-20 bg-tertiary-fixed rounded-full flex items-center justify-center mb-6 shadow-lg shadow-black/5">
-            <CheckCircle2 className="text-tertiary w-10 h-10" />
-          </div>
-          <h2 className="text-headline-sm font-bold text-on-surface mb-2">You're all set!</h2>
-          <p className="text-body-md text-on-surface-variant mb-8">
-            Welcome to i-help. 
-            {kycStatus === "pending" && <span className="block mt-3"><Badge className="bg-[#ffdad6] text-[#93000a] hover:bg-[#ffdad6]">KYC Pending</Badge><br/><span className="text-sm mt-2 block">We are reviewing your documents.</span></span>}
-          </p>
-          <Button className="w-full py-3 text-base shadow-md" onClick={() => router.push(role === "MERCHANT" ? "/merchant/dashboard" : "/customer/dashboard")}>
-            Go to Dashboard
+            Go to Login
           </Button>
         </div>
       )}

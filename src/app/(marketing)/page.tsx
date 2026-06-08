@@ -3,26 +3,7 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <div className="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-surface-container-lowest border-b border-outline-variant shadow-sm">
-        <nav className="flex items-center justify-between px-margin py-md max-w-7xl mx-auto">
-          <div className="font-headline-lg text-headline-lg font-bold text-primary">i-help</div>
-          <div className="hidden md:flex items-center gap-lg">
-            <a className="text-primary font-bold border-b-2 border-primary pb-1 font-label-lg transition-all duration-200" href="#">Find Services</a>
-            <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">Explore Subscriptions</a>
-            <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">Become a Merchant</a>
-            <a className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="#">How it Works</a>
-          </div>
-          <Link href="/register">
-            <button className="bg-primary text-on-primary px-lg py-sm rounded font-label-lg transition-all duration-150 active:scale-95">
-              Login / Sign Up
-            </button>
-          </Link>
-        </nav>
-      </header>
-      
-      <main className="pt-24 overflow-x-hidden">
+      <main className="pt-24 overflow-x-hidden flex-1">
         {/* Section 1: Hero */}
         <section className="relative px-margin py-xl lg:py-48 flex flex-col items-center text-center max-w-7xl mx-auto">
           <h1 className="font-black text-5xl md:text-7xl text-primary max-w-4xl tracking-tighter leading-[1.1] mb-lg">
@@ -349,22 +330,5 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-surface-container-high border-t border-outline-variant">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-lg px-margin py-xl max-w-7xl mx-auto">
-          <div className="flex flex-col items-center md:items-start gap-sm">
-            <div className="font-headline-sm font-black text-primary">i-help</div>
-            <p className="text-on-surface-variant font-body-md text-center md:text-left">© 2026 i-help Marketplace. All rights reserved.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-xl">
-            <a className="text-on-surface-variant font-label-md hover:text-primary underline transition-all duration-200" href="#">Privacy Policy</a>
-            <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Terms of Service</a>
-            <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Cookie Policy</a>
-            <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Support</a>
-          </div>
-        </div>
-      </footer>
-    </div>
   );
 }

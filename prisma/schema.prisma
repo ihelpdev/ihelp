@@ -1,10 +1,10 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -17,37 +17,64 @@ enum KycStatus {
   VERIFIED
 }
 
-model User {
-  id              String           @id @default(uuid())
-  name            String
-  email           String           @unique
-  role            Role             @default(CUSTOMER)
-  kycStatus       KycStatus        @default(PENDING)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
 
-  merchantProfile MerchantProfile?
-  jobsAsCustomer  Job[]            @relation("CustomerJobs")
-  jobsAsMerchant  Job[]            @relation("MerchantJobs")
-  wallets         Wallet[]
-  subscriptions   Subscription[]
+model User {
+  id                String            @id @default(uuid())
+  name              String
+  email             String            @unique
+  role              Role              @default(CUSTOMER)
+  kycStatus         KycStatus         @default(PENDING)
+  profileCompleted  Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  profile           Profile?
+  merchantProfile   MerchantProfile?
+  jobsAsCustomer    Job[]             @relation("CustomerJobs")
+  jobsAsMerchant    Job[]             @relation("MerchantJobs")
+  wallets           Wallet[]
+  subscriptions     Subscription[]
+  merchantListings  MerchantListing[] @relation("MerchantListings")
+}
+
+model Profile {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender           Gender
+  phone            String
+  dob              DateTime
+  location         String
+  avatarUrl        String?
+  nin              String?
+  bvn              String?
+  passportImageUrl String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model MerchantProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id])
-  skills            String[]
-  baseRate          Float    @default(0.0)
-  acceptanceRate    Float    @default(100.0)
-  internalAgentScore Float   @default(5.0)
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  skills             String[]
+  baseRate           Float    @default(0.0)
+  acceptanceRate     Float    @default(100.0)
+  internalAgentScore Float    @default(5.0)
 }
 
 enum JobStatus {
   PENDING
+  ACCEPTED
   EN_ROUTE
   IN_PROGRESS
   COMPLETED
+  REJECTED
   DISPUTED
 }
 
@@ -57,17 +84,20 @@ enum EscrowStatus {
 }
 
 model Job {
-  id            String       @id @default(uuid())
-  customerId    String
-  customer      User         @relation("CustomerJobs", fields: [customerId], references: [id])
-  merchantId    String?
-  merchant      User?        @relation("MerchantJobs", fields: [merchantId], references: [id])
-  status        JobStatus    @default(PENDING)
-  escrowStatus  EscrowStatus @default(LOCKED)
-  amount        Float        @default(0.0)
-  description   String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id           String       @id @default(uuid())
+  customerId   String
+  customer     User         @relation("CustomerJobs", fields: [customerId], references: [id])
+  merchantId   String?
+  merchant     User?        @relation("MerchantJobs", fields: [merchantId], references: [id])
+  serviceId    String?
+  serviceType  String?
+  status       JobStatus    @default(PENDING)
+  escrowStatus EscrowStatus @default(LOCKED)
+  amount       Float        @default(0.0)
+  description  String?
+  frequency    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
 
 enum WalletType {
@@ -99,4 +129,20 @@ model Subscription {
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model MerchantListing {
+  id          String   @id @default(uuid())
+  merchantId  String
+  merchant    User     @relation("MerchantListings", fields: [merchantId], references: [id])
+  name        String
+  description String
+  category    String   @default("General")
+  baseRateNgn Float
+  unit        String   @default("hour")
+  notes       String   @default("")
+  details     Json     @default("{}")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

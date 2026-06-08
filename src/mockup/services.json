@@ -1,0 +1,121 @@
+{
+  "on_demand_services": [
+    {
+      "id": "srv_001",
+      "name": "Plumbing Repairs",
+      "slug": "plumbing-repairs",
+      "category": "Pro",
+      "description": "Fixing burst pipes, structural leak detection, tap installations, and bathroom blockages.",
+      "suggested_base_rate_ngn": 5000,
+      "unit": "hour"
+    },
+    {
+      "id": "srv_002",
+      "name": "Smart Inverter & Solar Setup",
+      "slug": "solar-inverter-setup",
+      "category": "Pro",
+      "description": "Load calculations, solar panel mounting, battery bank coupling, and hybrid inverter configuration.",
+      "suggested_base_rate_ngn": 15000,
+      "unit": "fixed_diagnostic"
+    },
+    {
+      "id": "srv_003",
+      "name": "AC Servicing & Gas Top-up",
+      "slug": "ac-servicing",
+      "category": "Pro",
+      "description": "Deep filter washing, condenser cleaning, refrigerant gas level optimization, and leak sealing.",
+      "suggested_base_rate_ngn": 8000,
+      "unit": "unit"
+    },
+    {
+      "id": "srv_004",
+      "name": "Car Brake Pad Replacement",
+      "slug": "brake-replacement",
+      "category": "Pro",
+      "description": "Front and rear brake pad swaps, rotor disk inspection, and brake fluid bleeding.",
+      "suggested_base_rate_ngn": 6000,
+      "unit": "job"
+    },
+    {
+      "id": "srv_005",
+      "name": "Generator Carbon Clean & Tune-up",
+      "slug": "generator-tuneup",
+      "category": "Pro",
+      "description": "Carburetor cleaning, oil filter change, spark plug replacement, and valve adjustments for small to medium sets.",
+      "suggested_base_rate_ngn": 4500,
+      "unit": "job"
+    },
+    {
+      "id": "srv_006",
+      "name": "Electrical Fault Diagnosis",
+      "slug": "electrical-faults",
+      "category": "Pro",
+      "description": "Tracing short circuits, resolving frequent breaker tripping, phase balancing, and changeover switch repairs.",
+      "suggested_base_rate_ngn": 5000,
+      "unit": "hour"
+    },
+    {
+      "id": "srv_007",
+      "name": "Wall Painting & Post-Screed Finishing",
+      "slug": "painting-finishing",
+      "category": "Pro",
+      "description": "Primer coating, precision alignment masking, texturing, and multi-layer wall paint applications.",
+      "suggested_base_rate_ngn": 2500,
+      "unit": "sq_meter"
+    }
+  ],
+  "subscription_base_services": [
+    {
+      "id": "sub_srv_001",
+      "name": "Routine Laundry Service",
+      "slug": "laundry",
+      "tier_eligibility": "Flex",
+      "description": "Standard wash, tumble dry, press/iron, and crisp folded delivery (capped up to 15kg per session).",
+      "base_price_per_session_ngn": 6000
+    },
+    {
+      "id": "sub_srv_002",
+      "name": "Executive Car Wash & Detailing",
+      "slug": "car-wash",
+      "tier_eligibility": "Flex",
+      "description": "Exterior pressure foam wash, wheel/tire dressing, and meticulous interior vacuuming right at your doorstep.",
+      "base_price_per_session_ngn": 4250
+    },
+    {
+      "id": "sub_srv_003",
+      "name": "Standard Apartment Housekeeping",
+      "slug": "housekeeping",
+      "tier_eligibility": "Flex",
+      "description": "Surface dusting, floor sweeping, wet mopping, kitchen surface polishing, bathroom disinfection, and waste removal.",
+      "base_price_per_session_ngn": 15000
+    },
+    {
+      "id": "sub_srv_004",
+      "name": "Corporate Office Janitorial Maintenance",
+      "slug": "office-janitorial",
+      "tier_eligibility": "Flex",
+      "description": "Commercial lobby space floor buffing, high-reach window cleaning, sanitization of shared workspaces, and restroom restocking management.",
+      "base_price_per_session_ngn": 35000
+    }
+  ],
+  "subscription_frequency_matrix": [
+    {
+      "frequency_key": "WEEKLY",
+      "label": "Weekly (4 sessions / month)",
+      "sessions_per_month": 4,
+      "discount_percentage": 10
+    },
+    {
+      "frequency_key": "BI_WEEKLY",
+      "label": "Bi-Weekly (2 sessions / month)",
+      "sessions_per_month": 2,
+      "discount_percentage": 5
+    },
+    {
+      "frequency_key": "MONTHLY",
+      "label": "Monthly (1 session / month)",
+      "sessions_per_month": 1,
+      "discount_percentage": 0
+    }
+  ]
+}
