@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 
 const TARGET_MERCHANT_ID = "4ac8c48e-8a3a-4299-8f8e-98712c26165e";
 
