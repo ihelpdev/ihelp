@@ -9,10 +9,13 @@ export function Footer() {
           <p className="text-on-surface-variant font-body-md text-center md:text-left">© 2026 i-help Marketplace. All rights reserved.</p>
         </div>
         <div className="flex flex-wrap justify-center gap-xl">
-          <a className="text-on-surface-variant font-label-md hover:text-primary underline transition-all duration-200" href="#">Privacy Policy</a> 
-          <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Terms of Service</a>
-          <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Cookie Policy</a>
-          <a className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Support</a>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/customer/dashboard">Find Services</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/explore-subscriptions">Explore Subscriptions</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/become-a-merchant">Become a Merchant</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/how-it-works">How it Works</Link>
+          <div className="w-px h-4 bg-outline-variant hidden md:block"></div>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Privacy Policy</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Terms of Service</Link>
         </div>
       </div>
     </footer>

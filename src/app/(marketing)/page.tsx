@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ShieldCheck, ArrowRight, BadgeCheck, Star, Lock, Search, Shield, Siren, Store, Banknote, Calendar, Wallet, Wrench, PlusCircle, Zap, Car, Sparkles, CheckCircle2, Fingerprint, Users, Landmark } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <main className="pt-24 overflow-x-hidden flex-1 bg-background">
+    <main className="pt-12 overflow-x-hidden flex-1 bg-background">
       {/* Section 1: Hero */}
-      <section className="relative px-margin py-12 lg:py-32 max-w-7xl mx-auto">
+      <section className="relative px-margin py-12  max-w-7xl mx-auto">
         {/* Background Ambient Glows */}
         <div className="absolute top-0 right-0 -z-10 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] bg-tertiary-container/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -15,7 +16,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left lg:col-span-6 xl:col-span-5 space-y-6">
             {/* Trust Micro-Badge */}
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full backdrop-blur-sm animate-fade-in">
-              <span className="material-symbols-outlined text-primary text-sm font-bold">verified_user</span>
+              <ShieldCheck className="text-primary text-sm font-bold" />
               <span className="text-primary font-medium text-xs tracking-wide uppercase">100% Vetted & Guarded by Escrow</span>
             </div>
 
@@ -23,7 +24,7 @@ export default function LandingPage() {
               Reliable Local Services, Handled by <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Vetted Pros.</span>
             </h1>
             
-            <p className="font-body-lg text-on-surface-variant max-w-xl text-base md:text-lg leading-relaxed">
+            <p className="font-body-lg text-on-surface-variant  text-base md:text-lg leading-relaxed">
               Book certified artisans on-demand or subscribe to automated home chores. Safe, escrow-protected, and physically audited by our internal agents.
             </p>
 
@@ -31,7 +32,7 @@ export default function LandingPage() {
               <Link href="/register?role=customer" className="w-full sm:w-auto">
                 <button className="w-full bg-primary text-on-primary px-8 py-4 rounded-xl font-headline-sm shadow-md hover:shadow-xl hover:bg-primary/95 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                   <span>Find a Service Pro Now</span>
-                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  <ArrowRight className="text-sm" />
                 </button>
               </Link>
               <Link href="/register?role=merchant" className="w-full sm:w-auto">
@@ -80,7 +81,7 @@ export default function LandingPage() {
                       <Image 
                         className="object-cover" 
                         alt="Professional artisan portrait" 
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyd3zGafujD5cr-2rsnbQS845B_9lzp7vhxVOs8_efXMZGqOYZvRhZz_euImsnPd1fML3J5G7kbUwpj7ABwlxVVbqhpjuDTGBbHhvUpF4gOMScHK-xP9fxigP2uqyUD5R78TS44smm0dz5w1RWDVRWwbsOVXJxrtkcd5_s8yZY19tjocmFAXn_9CoMxSpMXK54yulychG0V6i_QF3bZD2fNIYOKC4F5PMp7f7IKaN-90fYePa54AhMYbTscE8om7paXNIhNtJpCbY"
+                        src="https://www.shutterstock.com/image-photo/handsome-young-african-man-head-600nw-2258228929.jpg"
                         fill
                         sizes="56px"
                         priority
@@ -89,15 +90,15 @@ export default function LandingPage() {
                     <div>
                       <div className="font-bold text-lg text-primary flex items-center gap-1.5">
                         <span>Samuel O.</span>
-                        <span className="material-symbols-outlined text-primary text-base font-bold" title="Verified by physical agent">verified</span>
+                        <BadgeCheck className="text-primary text-base font-bold" />
                       </div>
-                      <div className="text-sm text-on-surface-variant">Master Electrician</div>
+                      <div className="text-sm text-white">Master Electrician</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2 bg-surface-container-lowest px-3 py-1 rounded-full border border-outline-variant w-full justify-between sm:w-auto">
                     <div className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-amber-500 text-sm fill-current">star</span>
+                      <Star className="text-amber-500 text-sm fill-current" />
                       <span className="font-bold text-sm">4.9</span>
                     </div>
                     <span className="text-on-surface-variant text-xs">(124 Jobs Completed)</span>
@@ -107,8 +108,8 @@ export default function LandingPage() {
                 {/* Status/Escrow Card */}
                 <div className="sm:col-span-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border border-white/40 dark:border-white/10 p-5 rounded-2xl shadow-xl sm:mt-8 flex flex-col gap-3 transform hover:-translate-y-1 transition-transform">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Security Engine</span>
-                    <span className="material-symbols-outlined text-emerald-500 bg-emerald-500/10 p-1 rounded-lg text-sm">lock</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Security Engine</span>
+                    <Lock className="text-emerald-500 bg-emerald-500/10 p-1 rounded-lg text-sm" />
                   </div>
                   
                   <div className="space-y-1">
@@ -116,7 +117,7 @@ export default function LandingPage() {
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                       Escrow Active
                     </div>
-                    <div className="text-xs text-on-surface-variant font-medium">NGN 12,500 held securely</div>
+                    <div className="text-xs text-white font-medium">NGN 12,500 held securely</div>
                   </div>
                   
                   <div className="h-1.5 w-full bg-outline-variant rounded-full overflow-hidden">
@@ -144,27 +145,27 @@ export default function LandingPage() {
             <div className="space-y-md">
               <div className="flex items-center gap-md mb-lg">
                 <div className="bg-primary p-md rounded-xl">
-                  <span className="material-symbols-outlined text-on-primary text-3xl">person_search</span>
+                  <Search className="text-on-primary text-3xl" />
                 </div>
                 <h3 className="font-headline-md text-primary">For Service Seekers</h3>
               </div>
               <div className="grid grid-cols-1 gap-md">
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-primary">verified</span>
+                  <BadgeCheck className="text-primary" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Dual-Layer Ratings</h4>
                     <p className="text-on-surface-variant font-body-md">Peer reviews backed by physical audit reports from i-help agents.</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-primary">security</span>
+                  <Shield className="text-primary" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Escrow Protection</h4>
                     <p className="text-on-surface-variant font-body-md">Payment is only released when you confirm the job is 100% complete.</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-primary">emergency</span>
+                  <Siren className="text-primary" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Emergency Dispatch</h4>
                     <p className="text-on-surface-variant font-body-md">Get a technician on-site in under 45 minutes for urgent repairs.</p>
@@ -177,27 +178,27 @@ export default function LandingPage() {
             <div className="space-y-md">
               <div className="flex items-center gap-md mb-lg">
                 <div className="bg-tertiary-container p-md rounded-xl">
-                  <span className="material-symbols-outlined text-on-tertiary text-3xl">storefront</span>
+                  <Store className="text-on-tertiary text-3xl" />
                 </div>
                 <h3 className="font-headline-md text-tertiary-container">For Skilled Merchants</h3>
               </div>
               <div className="grid grid-cols-1 gap-md">
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-tertiary-container transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-tertiary-container">payments</span>
+                  <Banknote className="text-tertiary-container" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Keep 100% of Base Rate</h4>
                     <p className="text-on-surface-variant font-body-md">We only charge a small platform fee on top, never from your pocket.</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-tertiary-container transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-tertiary-container">calendar_month</span>
+                  <Calendar className="text-tertiary-container" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Managed Flex Gigs</h4>
                     <p className="text-on-surface-variant font-body-md">Control your own schedule with our smart-matching availability engine.</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-tertiary-container transition-colors flex items-start gap-md">
-                  <span className="material-symbols-outlined text-tertiary-container">account_balance_wallet</span>
+                  <Wallet className="text-tertiary-container" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Instant Omni-Wallet</h4>
                     <p className="text-on-surface-variant font-body-md">Cash out your earnings instantly to any local bank or mobile money.</p>
@@ -217,59 +218,59 @@ export default function LandingPage() {
             <p className="text-on-surface-variant font-body-lg">Top-rated artisans ready to help today.</p>
           </div>
           <button className="text-primary font-label-lg flex items-center gap-xs hover:gap-sm transition-all">
-            View all categories <span className="material-symbols-outlined">arrow_forward</span>
+            View all categories <ArrowRight className="" />
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lg">
           {/* Card 1: Plumbing */}
           <div className="group bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg hover:-translate-y-2 hover:shadow-xl transition-transform duration-300 cursor-pointer">
             <div className="bg-primary/5 w-16 h-16 rounded-xl flex items-center justify-center mb-lg group-hover:bg-primary transition-colors">
-              <span className="material-symbols-outlined text-primary group-hover:text-on-primary text-3xl">plumbing</span>
+              <Wrench className="text-primary group-hover:text-on-primary text-3xl" />
             </div>
             <h3 className="font-headline-md text-primary mb-sm">Plumbing</h3>
             <p className="text-on-surface-variant font-body-md mb-xl">Leak repairs, pipe installations, and bathroom fittings.</p>
             <div className="flex items-center justify-between mt-auto">
               <span className="bg-surface-container px-sm py-xs rounded font-label-md text-primary">From NGN 4,500/hr</span>
-              <span className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">add_circle</span>
+              <PlusCircle className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
             </div>
           </div>
           
           {/* Card 2: Electrical */}
           <div className="group bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg hover:-translate-y-2 hover:shadow-xl transition-transform duration-300 cursor-pointer">
             <div className="bg-primary/5 w-16 h-16 rounded-xl flex items-center justify-center mb-lg group-hover:bg-primary transition-colors">
-              <span className="material-symbols-outlined text-primary group-hover:text-on-primary text-3xl">electrical_services</span>
+              <Zap className="text-primary group-hover:text-on-primary text-3xl" />
             </div>
             <h3 className="font-headline-md text-primary mb-sm">Electrical</h3>
             <p className="text-on-surface-variant font-body-md mb-xl">Fault finding, wiring, and appliance installation.</p>
             <div className="flex items-center justify-between mt-auto">
               <span className="bg-surface-container px-sm py-xs rounded font-label-md text-primary">From NGN 5,000/hr</span>
-              <span className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">add_circle</span>
+              <PlusCircle className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
             </div>
           </div>
           
           {/* Card 3: Car Repair */}
           <div className="group bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg hover:-translate-y-2 hover:shadow-xl transition-transform duration-300 cursor-pointer">
             <div className="bg-primary/5 w-16 h-16 rounded-xl flex items-center justify-center mb-lg group-hover:bg-primary transition-colors">
-              <span className="material-symbols-outlined text-primary group-hover:text-on-primary text-3xl">car_repair</span>
+              <Car className="text-primary group-hover:text-on-primary text-3xl" />
             </div>
             <h3 className="font-headline-md text-primary mb-sm">Car Repairs</h3>
             <p className="text-on-surface-variant font-body-md mb-xl">On-site mechanics for maintenance and emergency fixes.</p>
             <div className="flex items-center justify-between mt-auto">
               <span className="bg-surface-container px-sm py-xs rounded font-label-md text-primary">From NGN 7,500/hr</span>
-              <span className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">add_circle</span>
+              <PlusCircle className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
             </div>
           </div>
           
           {/* Card 4: Cleaning */}
           <div className="group bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg hover:-translate-y-2 hover:shadow-xl transition-transform duration-300 cursor-pointer">
             <div className="bg-primary/5 w-16 h-16 rounded-xl flex items-center justify-center mb-lg group-hover:bg-primary transition-colors">
-              <span className="material-symbols-outlined text-primary group-hover:text-on-primary text-3xl">cleaning_services</span>
+              <Sparkles className="text-primary group-hover:text-on-primary text-3xl" />
             </div>
             <h3 className="font-headline-md text-primary mb-sm">Deep Home Cleaning</h3>
             <p className="text-on-surface-variant font-body-md mb-xl">Professional sanitation for homes and office spaces.</p>
             <div className="flex items-center justify-between mt-auto">
               <span className="bg-surface-container px-sm py-xs rounded font-label-md text-primary">From NGN 10,000/visit</span>
-              <span className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">add_circle</span>
+              <PlusCircle className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
             </div>
           </div>
         </div>
@@ -285,15 +286,15 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col gap-md">
               <div className="flex items-center gap-md">
-                <span className="material-symbols-outlined text-tertiary-fixed-dim">check_circle</span>
+                <CheckCircle2 className="text-tertiary-fixed-dim" />
                 <span className="font-body-md text-white">Fixed monthly pricing, no hidden fees</span>
               </div>
               <div className="flex items-center gap-md">
-                <span className="material-symbols-outlined text-tertiary-fixed-dim">check_circle</span>
+                <CheckCircle2 className="text-tertiary-fixed-dim" />
                 <span className="font-body-md text-white">Priority access to top-rated merchants</span>
               </div>
               <div className="flex items-center gap-md">
-                <span className="material-symbols-outlined text-tertiary-fixed-dim">check_circle</span>
+                <CheckCircle2 className="text-tertiary-fixed-dim" />
                 <span className="font-body-md text-white">Cancel or pause subscriptions any time</span>
               </div>
             </div>
@@ -330,7 +331,7 @@ export default function LandingPage() {
                     <div className="text-on-surface-variant font-label-md">Verified Merchant</div>
                   </div>
                   <div className="ml-auto flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-sm fill-current text-amber-500">star</span>
+                    <Star className="text-sm fill-current text-amber-500" />
                     <span className="font-bold text-on-surface">4.8</span>
                   </div>
                 </div>
@@ -355,7 +356,7 @@ export default function LandingPage() {
           
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="w-20 h-20 bg-primary text-on-primary rounded-full flex items-center justify-center mb-lg shadow-xl ring-8 ring-background">
-              <span className="material-symbols-outlined text-3xl">fingerprint</span>
+              <Fingerprint className="text-3xl" />
             </div>
             <h3 className="font-headline-sm text-primary mb-sm">1. Multi-Tier KYC Validation</h3>
             <p className="text-on-surface-variant font-body-md px-lg">Strict government ID verification and background checks for every registered merchant.</p>
@@ -363,7 +364,7 @@ export default function LandingPage() {
           
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="w-20 h-20 bg-primary text-on-primary rounded-full flex items-center justify-center mb-lg shadow-xl ring-8 ring-background">
-              <span className="material-symbols-outlined text-3xl">groups</span>
+              <Users className="text-3xl" />
             </div>
             <h3 className="font-headline-sm text-primary mb-sm">2. Physical Agent Curation</h3>
             <p className="text-on-surface-variant font-body-md px-lg">Our physical agents visit merchant workspaces to verify skill level and tool quality.</p>
@@ -371,7 +372,7 @@ export default function LandingPage() {
           
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="w-20 h-20 bg-primary text-on-primary rounded-full flex items-center justify-center mb-lg shadow-xl ring-8 ring-background">
-              <span className="material-symbols-outlined text-3xl">account_balance</span>
+              <Landmark className="text-3xl" />
             </div>
             <h3 className="font-headline-sm text-primary mb-sm">3. Transparent Escrow Engine</h3>
             <p className="text-on-surface-variant font-body-md px-lg">An automated payment system that holds funds safely until you sign off on the work.</p>
