@@ -26,6 +26,8 @@ export interface MerchantListing {
   name:        string
   description: string
   category:    string
+  tags:        string[]
+  coverImageUrl: string | null
   baseRateNgn: number
   unit:        ServiceUnit
   notes:       string              // public-facing brief note shown on the card
@@ -48,6 +50,8 @@ export const blankListing = (): Omit<MerchantListing, 'id' | 'merchantId' | 'cre
   name:        '',
   description: '',
   category:    '',
+  tags:        [],
+  coverImageUrl: null,
   baseRateNgn: 0,
   unit:        'hour',
   notes:       '',

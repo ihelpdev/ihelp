@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { logout } from "@/lib/features/auth/authSlice";
 import { RootState } from "@/lib/store";
+import Link from "next/link";
 
 export default function MobileUserMenu() {
   const dispatch = useDispatch();
@@ -24,15 +25,6 @@ export default function MobileUserMenu() {
     router.push("/");
   };
 
-  const handleProfileClick = () => {
-    // If the app had a dedicated /profile route, we'd go there.
-    // Since profile is a tab on the dashboard, we navigate to dashboard.
-    const dashPath = user.role === "MERCHANT" ? "/merchant/dashboard" : "/customer/dashboard";
-    if (pathname !== dashPath) {
-      router.push(dashPath);
-    }
-    setShowDropdown(false);
-  };
 
   return (
     <div className="md:hidden relative">
@@ -47,12 +39,13 @@ export default function MobileUserMenu() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
           <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-1 z-50">
-            <button 
-              onClick={handleProfileClick}
-              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surface-container-low transition-colors"
+            <Link
+              href={user.role === "MERCHANT" ? "/merchant/dashboard" : "/customer/dashboard"} 
+              onClick={() => setShowDropdown(false)}
+              className="flex w-full  px-4 py-3 text-sm font-medium hover:bg-surface-container-low transition-colors"
             >
               Profile
-            </button>
+            </Link>
             <div className="h-px bg-outline-variant my-1" />
             <button 
               onClick={handleLogout}

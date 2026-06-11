@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, description, category, baseRateNgn, unit, notes, details, isActive } = body;
+    const { name, description, category, tags, coverImageUrl, baseRateNgn, unit, notes, details, isActive } = body;
 
     if (!name || baseRateNgn === undefined) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -53,6 +53,8 @@ export async function POST(req: Request) {
         name,
         description: description ?? '',
         category: category ?? 'General',
+        tags: tags ?? [],
+        coverImageUrl: coverImageUrl ?? null,
         baseRateNgn: parseFloat(baseRateNgn),
         unit: unit ?? 'hour',
         notes: notes ?? '',

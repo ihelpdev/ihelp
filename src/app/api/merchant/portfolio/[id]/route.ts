@@ -32,6 +32,8 @@ export async function PATCH(
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.coverImageUrl !== undefined) updateData.coverImageUrl = body.coverImageUrl;
     if (body.baseRateNgn !== undefined) updateData.baseRateNgn = parseFloat(body.baseRateNgn);
     if (body.unit !== undefined) updateData.unit = body.unit;
     if (body.notes !== undefined) updateData.notes = body.notes;

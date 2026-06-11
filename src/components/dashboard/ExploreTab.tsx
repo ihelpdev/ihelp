@@ -349,6 +349,8 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                 meta={`NGN ${svc.suggested_base_rate_ngn.toLocaleString()} / ${svc.unit === "hour" ? "hr" : svc.unit}`}
                 locked={!profileCompleted}
                 onSelect={() => openOD(svc.id)}
+                coverImageUrl={svc.coverImageUrl}
+                tags={svc.tags}
               />
             ))}
           </div>
@@ -391,22 +393,47 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
 // ── Sub-components ──────────────────────────────────────────────────────────────
 
-function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSelect }: {
+function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSelect, coverImageUrl, tags }: {
   title: string; badge: string; badgeClass: string; description: string; meta: string; locked?: boolean; onSelect: () => void;
+  coverImageUrl?: string | null; tags?: string[];
 }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col gap-3 hover:border-primary/50 hover:shadow-md transition-all">
-      <div className="flex items-start justify-between gap-2">
-        <h4 className="font-semibold text-on-surface text-sm leading-snug">{title}</h4>
-        <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${badgeClass}`}>{badge}</span>
-      </div>
-      <p className="text-xs text-on-surface-variant leading-relaxed flex-1">{description}</p>
-      <div className="flex items-center justify-between border-t border-outline-variant pt-3">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:border-primary/50 hover:shadow-md transition-all">
+      {coverImageUrl && (
+        <div className="w-full h-32 bg-surface-container overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={coverImageUrl} alt={title} className="w-full h-full object-cover" />
+        </div>
+      )}
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="font-semibold text-on-surface text-sm leading-snug">{title}</h4>
+          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${badgeClass}`}>{badge}</span>
+        </div>
+        <p className="text-xs text-on-surface-variant leading-relaxed flex-1">{description}</p>
+        
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-auto pb-2">
+            {tags.slice(0, 3).map((tag, i) => (
+              <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-surface-container rounded-md text-on-surface-variant">
+                {tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span className="text-[10px] font-medium px-2 py-0.5 bg-surface-container rounded-md text-on-surface-variant">
+                +{tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between border-t border-outline-variant pt-3">
         <span className="text-sm font-semibold text-on-surface">{meta}</span>
         <button onClick={onSelect} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-opacity ${locked ? 'bg-surface-variant text-on-surface-variant cursor-not-allowed opacity-80' : 'bg-primary text-on-primary hover:opacity-90'}`}>
           {locked && <Lock className="w-3.5 h-3.5" />}
           Select
         </button>
+      </div>
       </div>
     </div>
   );

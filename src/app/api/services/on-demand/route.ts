@@ -14,11 +14,8 @@ export async function GET() {
 
     const services = await prisma.merchantListing.findMany({
       where: whereClause,
-      // Optional: order by category, then name
-      orderBy: [
-        { category: 'asc' },
-        { name: 'asc' }
-      ]
+      // order by latest modified
+      orderBy: { updatedAt: 'desc' }
     });
 
     const mapped = services.map(s => {
@@ -28,6 +25,8 @@ export async function GET() {
         name: s.name,
         slug: s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), // Generate a slug if needed
         category: s.category,
+        tags: s.tags,
+        coverImageUrl: s.coverImageUrl,
         description: s.description,
         suggested_base_rate_ngn: s.baseRateNgn,
         unit: s.unit,

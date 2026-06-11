@@ -13,6 +13,38 @@ export default function PortfolioTab() {
   const [formData, setFormData]     = useState<Partial<MerchantListing>>(blankListing());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+  const [tagInput, setTagInput] = useState("");
+
+  const uploadToCloudinary = async (file: File) => {
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    uploadData.append('upload_preset', 'ihelp-images');
+    
+    const res = await fetch(`https://api.cloudinary.com/v1_1/dik1cosdn/image/upload`, {
+      method: 'POST',
+      body: uploadData,
+    });
+    const data = await res.json();
+    return data.secure_url;
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploadingCover(true);
+    try {
+      const url = await uploadToCloudinary(e.target.files[0]);
+      if (url) {
+        setFormData(prev => ({ ...prev, coverImageUrl: url }));
+      }
+    } catch (error) {
+      console.error("Error uploading cover image", error);
+      alert("Error uploading cover image");
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -20,19 +52,8 @@ export default function PortfolioTab() {
     try {
       const urls: string[] = [];
       for (let i = 0; i < e.target.files.length; i++) {
-        const file = e.target.files[i];
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-        uploadData.append('upload_preset', 'ihelp-images');
-        
-        const res = await fetch(`https://api.cloudinary.com/v1_1/dik1cosdn/image/upload`, {
-          method: 'POST',
-          body: uploadData,
-        });
-        const data = await res.json();
-        if (data.secure_url) {
-          urls.push(data.secure_url);
-        }
+        const url = await uploadToCloudinary(e.target.files[i]);
+        if (url) urls.push(url);
       }
       
       setFormData(prev => {
@@ -59,6 +80,21 @@ export default function PortfolioTab() {
     } finally {
       setIsUploadingImages(false);
     }
+  };
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = tagInput.trim();
+      if (val && !(formData.tags || []).includes(val)) {
+        setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), val] }));
+      }
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setFormData(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tag) }));
   };
 
   const openNewForm = () => {
@@ -112,10 +148,15 @@ export default function PortfolioTab() {
       const url = editingId ? `/api/merchant/portfolio/${editingId}` : "/api/merchant/portfolio";
       const method = editingId ? "PATCH" : "POST";
       
+      const submitData = { ...formData };
+      if (submitData.category === "Other" && customCategory.trim()) {
+        submitData.category = customCategory.trim();
+      }
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
       
       const data = await res.json();
@@ -153,12 +194,35 @@ export default function PortfolioTab() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface">Category</label>
-              <select value={formData.category || 'General'} onChange={e => setFormData({ ...formData, category: e.target.value })} className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm">
-                <option value="Pro">Pro Services</option>
-                <option value="Home">Home Maintenance</option>
-                <option value="Auto">Auto Repairs</option>
+              <select 
+                value={["Laundry", "Cleaning", "Maintenance", "Repairs", "General"].includes(formData.category || '') ? formData.category : (formData.category ? "Other" : "General")} 
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === "Other") {
+                    setCustomCategory("");
+                    setFormData({ ...formData, category: "Other" });
+                  } else {
+                    setFormData({ ...formData, category: val });
+                  }
+                }} 
+                className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm"
+              >
+                <option value="Laundry">Laundry</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Repairs">Repairs</option>
                 <option value="General">General</option>
+                <option value="Other">Other (Custom)</option>
               </select>
+              {(!["Laundry", "Cleaning", "Maintenance", "Repairs", "General"].includes(formData.category || '') || formData.category === "Other") && (
+                <input 
+                  type="text"
+                  placeholder="Enter custom category"
+                  value={customCategory || (formData.category === "Other" ? "" : formData.category)}
+                  onChange={e => setCustomCategory(e.target.value)}
+                  className="mt-2 px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm"
+                />
+              )}
             </div>
             
             <div className="flex flex-col gap-1.5">
@@ -176,6 +240,52 @@ export default function PortfolioTab() {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-on-surface">Description</label>
             <textarea required value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm resize-none" placeholder="Describe the scope of work..." />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-on-surface">Tags</label>
+            <div className="flex flex-wrap gap-2 mb-1">
+              {(formData.tags || []).map(tag => (
+                <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                  {tag}
+                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-primary transition-colors"><X className="w-3 h-3" /></button>
+                </span>
+              ))}
+            </div>
+            <input 
+              type="text" 
+              value={tagInput}
+              onChange={e => setTagInput(e.target.value)}
+              onKeyDown={handleAddTag}
+              placeholder="Type a tag and press Enter" 
+              className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm" 
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 md:col-span-2">
+            <label className="text-sm font-semibold text-on-surface">Main Cover Image</label>
+            {formData.coverImageUrl ? (
+              <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-outline-variant group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={formData.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+                <button 
+                  type="button"
+                  onClick={() => setFormData({ ...formData, coverImageUrl: null })}
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center gap-2 px-4 py-4 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer text-sm font-medium text-on-surface-variant w-fit">
+                {isUploadingCover ? "Uploading..." : (
+                  <>
+                    <Plus className="w-4 h-4" /> Upload Cover Image
+                    <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingCover} />
+                  </>
+                )}
+              </label>
+            )}
           </div>
 
           <div className="border-t border-outline-variant pt-6">
@@ -277,14 +387,10 @@ export default function PortfolioTab() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {listings.map(l => (
             <div key={l.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
-              {(l.details?.portfolioImageUrls?.length || 0) > 0 && (
+              {l.coverImageUrl && (
                 <div className="h-40 w-full overflow-hidden bg-surface-container relative">
-                  <div className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory">
-                    {(l.details?.portfolioImageUrls || []).map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={url} alt="" className="h-full w-full object-cover shrink-0 snap-center" />
-                    ))}
-                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={l.coverImageUrl} alt="" className="h-full w-full object-cover" />
                 </div>
               )}
               

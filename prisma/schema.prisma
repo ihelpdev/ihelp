@@ -138,6 +138,8 @@ model MerchantListing {
   name        String
   description String
   category    String   @default("General")
+  tags        String[] @default([])
+  coverImageUrl String?
   baseRateNgn Float
   unit        String   @default("hour")
   notes       String   @default("")
