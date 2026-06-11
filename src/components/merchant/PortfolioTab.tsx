@@ -40,7 +40,10 @@ export default function PortfolioTab() {
           yearsExperience: 0,
           coverageAreaKm: 10,
           toolsProvided: false,
-          portfolioImageUrls: []
+          portfolioImageUrls: [],
+          availabilityDays: [],
+          certifications: [],
+          notes: ''
         };
         return {
           ...prev,
