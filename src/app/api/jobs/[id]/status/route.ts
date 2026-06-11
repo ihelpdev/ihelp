@@ -12,26 +12,29 @@ export async function PATCH(
     const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
-    if (error || !user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    if (error) {
+      return NextResponse.json({ success: false, message: `Auth error: ${error.message}` }, { status: 401 });
+    }
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'No active session' }, { status: 401 });
     }
 
     const body = await req.json();
     const { status } = body;
 
     if (!status || !Object.values(JobStatus).includes(status)) {
-      return NextResponse.json({ success: false, message: 'Invalid status' }, { status: 400 });
+      return NextResponse.json({ success: false, message: `Invalid status: ${status}` }, { status: 400 });
     }
 
     // Verify the user is the merchant for this job or has rights
     const job = await prisma.job.findUnique({ where: { id } });
     
     if (!job) {
-      return NextResponse.json({ success: false, message: 'Job not found' }, { status: 404 });
+      return NextResponse.json({ success: false, message: `Job not found: ${id}` }, { status: 404 });
     }
 
     if (job.merchantId && job.merchantId !== user.id && job.customerId !== user.id) {
-       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+       return NextResponse.json({ success: false, message: `Forbidden: Job belongs to merchant ${job.merchantId}, you are ${user.id}` }, { status: 403 });
     }
 
     // Determine escrow status updates based on job status
@@ -40,12 +43,21 @@ export async function PATCH(
       newEscrowStatus = EscrowStatus.RELEASED;
     }
 
+    const updateData: any = {
+      status: status as JobStatus,
+      escrowStatus: newEscrowStatus,
+    };
+
+    if (status === JobStatus.ACCEPTED && !job.merchantId) {
+      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+      if (dbUser?.role === 'MERCHANT') {
+        updateData.merchantId = user.id;
+      }
+    }
+
     const updatedJob = await prisma.job.update({
       where: { id },
-      data: {
-        status: status as JobStatus,
-        escrowStatus: newEscrowStatus,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ 
@@ -59,6 +71,6 @@ export async function PATCH(
 
   } catch (err: any) {
     console.error('Error updating job status:', err);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ success: false, message: err.message || 'Internal server error' }, { status: 500 });
   }
 }

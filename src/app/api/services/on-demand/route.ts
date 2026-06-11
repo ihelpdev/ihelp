@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const whereClause: any = { isActive: true };
+    if (user?.id) {
+      whereClause.merchantId = { not: user.id };
+    }
+
     const services = await prisma.merchantListing.findMany({
-      where: { isActive: true },
+      where: whereClause,
       // Optional: order by category, then name
       orderBy: [
         { category: 'asc' },
@@ -12,16 +21,19 @@ export async function GET() {
       ]
     });
 
-    // Map DB model to match what ExploreTab currently expects from mockup JSON
-    const mapped = services.map(s => ({
-      id: s.id,
-      name: s.name,
-      slug: s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), // Generate a slug if needed
-      category: s.category,
-      description: s.description,
-      suggested_base_rate_ngn: s.baseRateNgn,
-      unit: s.unit
-    }));
+    const mapped = services.map(s => {
+      const details = typeof s.details === 'object' && s.details !== null ? s.details : {};
+      return {
+        id: s.id,
+        name: s.name,
+        slug: s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), // Generate a slug if needed
+        category: s.category,
+        description: s.description,
+        suggested_base_rate_ngn: s.baseRateNgn,
+        unit: s.unit,
+        images: (details as any).portfolioImageUrls || []
+      };
+    });
 
     return NextResponse.json({ success: true, data: mapped });
   } catch (err: any) {

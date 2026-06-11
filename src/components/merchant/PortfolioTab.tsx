@@ -12,6 +12,51 @@ export default function PortfolioTab() {
   const [editingId, setEditingId]   = useState<string | null>(null);
   const [formData, setFormData]     = useState<Partial<MerchantListing>>(blankListing());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploadingImages(true);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('upload_preset', 'ihelp-images');
+        
+        const res = await fetch(`https://api.cloudinary.com/v1_1/dik1cosdn/image/upload`, {
+          method: 'POST',
+          body: uploadData,
+        });
+        const data = await res.json();
+        if (data.secure_url) {
+          urls.push(data.secure_url);
+        }
+      }
+      
+      setFormData(prev => {
+        const existingDetails = prev.details || {
+          yearsExperience: 0,
+          coverageAreaKm: 10,
+          toolsProvided: false,
+          portfolioImageUrls: []
+        };
+        return {
+          ...prev,
+          details: {
+            ...existingDetails,
+            portfolioImageUrls: [...(existingDetails.portfolioImageUrls || []), ...urls]
+          }
+        };
+      });
+    } catch (error) {
+      console.error("Error uploading images", error);
+      alert("Error uploading images");
+    } finally {
+      setIsUploadingImages(false);
+    }
+  };
 
   const openNewForm = () => {
     setFormData(blankListing());
@@ -152,15 +197,46 @@ export default function PortfolioTab() {
                 </label>
               </div>
 
-              <div className="flex flex-col gap-1.5 md:col-span-2">
-                <label className="text-sm font-semibold text-on-surface">Portfolio Image URLs (One per line)</label>
-                <textarea 
-                  value={(formData.details?.portfolioImageUrls || []).join('\n')} 
-                  onChange={e => setFormData({ ...formData, details: { ...formData.details!, portfolioImageUrls: e.target.value.split('\n').filter(s=>s.trim()) }})} 
-                  rows={3} 
-                  className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm font-mono" 
-                  placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" 
-                />
+              <div className="flex flex-col gap-3 md:col-span-2">
+                <label className="text-sm font-semibold text-on-surface">Portfolio Images</label>
+                
+                {/* Image List */}
+                {(formData.details?.portfolioImageUrls || []).length > 0 && (
+                  <div className="flex flex-wrap gap-3">
+                    {formData.details?.portfolioImageUrls.map((url, i) => (
+                      <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-outline-variant group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="Portfolio" className="w-full h-full object-cover" />
+                        <button 
+                          type="button"
+                          onClick={() => setFormData({ ...formData, details: { ...formData.details!, portfolioImageUrls: formData.details!.portfolioImageUrls.filter((_, idx) => idx !== i) }})}
+                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-5 h-5 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Upload Button */}
+                <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer text-sm font-medium text-on-surface-variant w-fit">
+                  {isUploadingImages ? (
+                    <span>Uploading...</span>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" /> Add Images
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        className="hidden" 
+                        onChange={handleImageUpload}
+                        disabled={isUploadingImages}
+                      />
+                    </>
+                  )}
+                </label>
               </div>
             </div>
           </div>
@@ -198,10 +274,10 @@ export default function PortfolioTab() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {listings.map(l => (
             <div key={l.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
-              {l.details.portfolioImageUrls.length > 0 && (
+              {(l.details?.portfolioImageUrls?.length || 0) > 0 && (
                 <div className="h-40 w-full overflow-hidden bg-surface-container relative">
                   <div className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory">
-                    {l.details.portfolioImageUrls.map((url, i) => (
+                    {(l.details?.portfolioImageUrls || []).map((url, i) => (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img key={i} src={url} alt="" className="h-full w-full object-cover shrink-0 snap-center" />
                     ))}
@@ -222,12 +298,12 @@ export default function PortfolioTab() {
                 <div className="mt-auto flex flex-col gap-3">
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low text-xs font-medium text-on-surface">
-                      <Award className="w-3.5 h-3.5 text-primary" /> {l.details.yearsExperience} yrs exp
+                      <Award className="w-3.5 h-3.5 text-primary" /> {l.details?.yearsExperience || 0} yrs exp
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low text-xs font-medium text-on-surface">
-                      <MapPin className="w-3.5 h-3.5 text-primary" /> {l.details.coverageAreaKm} km
+                      <MapPin className="w-3.5 h-3.5 text-primary" /> {l.details?.coverageAreaKm || 0} km
                     </span>
-                    {l.details.toolsProvided && (
+                    {l.details?.toolsProvided && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low text-xs font-medium text-on-surface">
                         <Wrench className="w-3.5 h-3.5 text-primary" /> Tools provided
                       </span>

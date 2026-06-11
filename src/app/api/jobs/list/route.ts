@@ -23,7 +23,12 @@ export async function GET(req: Request) {
     }
 
     const whereClause = dbUser.role === 'MERCHANT' 
-      ? { merchantId: user.id } 
+      ? {
+          OR: [
+            { merchantId: user.id },
+            { merchantId: null }
+          ]
+        }
       : { customerId: user.id };
 
     const jobs = await prisma.job.findMany({

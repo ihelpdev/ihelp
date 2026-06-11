@@ -11,7 +11,10 @@ export default function JobsTab() {
 
   // Fallback to empty if not a merchant
   const merchantJobs = user?.role === "MERCHANT" 
-    ? jobs.filter(j => j.merchantId === user.id) 
+    ? jobs.filter(j => 
+        (j.merchantId === user.id) || 
+        (!j.merchantId && j.customerId !== user.id)
+      ) 
     : jobs;
 
   const [activeFilter, setActiveFilter] = useState<"pending" | "accepted" | "history">("pending");

@@ -34,6 +34,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const [modal,      setModal]      = useState<ModalState | null>(null);
   const [toast,      setToast]      = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
   // Portal mount guard — ensures createPortal only runs client-side
@@ -169,13 +170,26 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           {/* ON-DEMAND: DETAIL */}
           {modal.kind === "on_demand" && modal.step === "detail" && odSvc && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {odSvc.images && odSvc.images.length > 0 && (
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x scrollbar-hide">
+                  {odSvc.images.map((img: string, idx: number) => (
+                    <img 
+                      key={idx} 
+                      src={img} 
+                      alt={`Preview ${idx + 1}`} 
+                      onClick={() => setExpandedImage(img)}
+                      className="w-28 h-28 object-cover rounded-xl shrink-0 snap-center border border-outline-variant shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                    />
+                  ))}
+                </div>
+              )}
               <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: 1.6 }}>{odSvc.description}</p>
               <div style={{ display: "flex", justifyContent: "space-between", background: "#f9fafb", borderRadius: "10px", padding: "12px 16px", fontSize: "14px" }}>
                 <span style={{ color: "#6b7280" }}>Rate</span>
                 <strong style={{ color: "#002d62" }}>NGN {odSvc.suggested_base_rate_ngn.toLocaleString()} / {odSvc.unit}</strong>
               </div>
               <InfoBox lines={["Vetted pro dispatched to your location.", "Payment held in escrow until completion.", "Funds released after your confirmation."]} />
-              <ModalBtn label="Request This Pro" onClick={() => goStep("confirm")} />
+              <ModalBtn label={`Request ${odSvc?.name}`} onClick={() => goStep("confirm")} />
             </div>
           )}
 
@@ -280,6 +294,18 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
     </div>
   ) : null;
 
+  const imageViewerJSX = expandedImage ? (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", backgroundColor: "rgba(0,0,0,0.85)" }}
+      onClick={() => setExpandedImage(null)}
+    >
+      <button onClick={() => setExpandedImage(null)} style={{ position: "absolute", top: 24, right: 24, padding: "8px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", cursor: "pointer", color: "#fff" }}>
+        <X style={{ width: 24, height: 24 }} />
+      </button>
+      <img src={expandedImage} alt="Expanded preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "8px" }} />
+    </div>
+  ) : null;
+
   return (
     <>
       {toast && (
@@ -358,6 +384,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
       {/* Portal — renders directly into document.body, escaping ALL parent stacking contexts */}
       {mounted && modalJSX && createPortal(modalJSX, document.body)}
+      {mounted && imageViewerJSX && createPortal(imageViewerJSX, document.body)}
     </>
   );
 }

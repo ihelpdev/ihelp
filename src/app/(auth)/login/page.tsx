@@ -30,10 +30,9 @@ export default function LoginPage() {
       password: formData.password,
     });
 
-    setIsLoading(false);
-
     if (error) {
       setErrorMsg(error.message);
+      setIsLoading(false);
       return;
     }
 

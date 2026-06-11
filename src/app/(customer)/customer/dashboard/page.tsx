@@ -76,19 +76,17 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col text-on-surface relative">
-      {/* Top Header */}
-      <header className="bg-surface-container-lowest border-b border-outline-variant px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="font-bold text-primary text-xl">i-help Portal</div>
+      <main className="flex-1 p-6 md:p-8 w-full max-w-7xl mx-auto pb-24 md:pb-8 flex flex-col gap-6">
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex flex-wrap items-center gap-2">
           {TABS.map(({ key, label, icon }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
                 activeTab === key
-                  ? "bg-primary-container text-on-primary-container"
-                  : "text-on-surface-variant hover:bg-surface-container-low"
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "bg-surface-container-low border border-outline-variant text-on-surface-variant hover:bg-surface-container-high"
               }`}
             >
               {icon}
@@ -96,10 +94,10 @@ export default function CustomerDashboard() {
             </button>
           ))}
         </nav>
-      </header>
 
-      <main className="flex-1 p-6 md:p-8 w-full max-w-7xl mx-auto pb-24 md:pb-8">
-        {renderTab()}
+        <div className="w-full mt-2">
+          {renderTab()}
+        </div>
       </main>
 
       {/* Mobile Bottom Nav */}
