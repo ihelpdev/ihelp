@@ -40,6 +40,7 @@ model User {
   wallets           Wallet[]
   subscriptions     Subscription[]
   merchantListings  MerchantListing[] @relation("MerchantListings")
+  ratings           ServiceRating[]   @relation("CustomerRatings")
 }
 
 model Profile {
@@ -84,20 +85,24 @@ enum EscrowStatus {
 }
 
 model Job {
-  id           String       @id @default(uuid())
-  customerId   String
-  customer     User         @relation("CustomerJobs", fields: [customerId], references: [id])
-  merchantId   String?
-  merchant     User?        @relation("MerchantJobs", fields: [merchantId], references: [id])
-  serviceId    String?
-  serviceType  String?
-  status       JobStatus    @default(PENDING)
-  escrowStatus EscrowStatus @default(LOCKED)
-  amount       Float        @default(0.0)
-  description  String?
-  frequency    String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                  String       @id @default(uuid())
+  customerId          String
+  customer            User         @relation("CustomerJobs", fields: [customerId], references: [id])
+  merchantId          String?
+  merchant            User?        @relation("MerchantJobs", fields: [merchantId], references: [id])
+  serviceId           String?
+  serviceType         String?
+  status              JobStatus    @default(PENDING)
+  escrowStatus        EscrowStatus @default(LOCKED)
+  amount              Float        @default(0.0)
+  description         String?
+  customerNote        String?      // Additional note from the customer to the service provider
+  customerNoteImages  String[]     @default([]) // Reference images attached by the customer
+  frequency           String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  rating              ServiceRating?
 }
 
 enum WalletType {
@@ -147,4 +152,19 @@ model MerchantListing {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  ratings     ServiceRating[]
+}
+
+model ServiceRating {
+  id                String          @id @default(uuid())
+  jobId             String          @unique  // one rating per job
+  job               Job             @relation(fields: [jobId], references: [id])
+  customerId        String
+  customer          User            @relation("CustomerRatings", fields: [customerId], references: [id])
+  merchantListingId String?
+  listing           MerchantListing? @relation(fields: [merchantListingId], references: [id])
+  rating            Int             // 1-5
+  comment           String?
+  createdAt         DateTime        @default(now())
 }

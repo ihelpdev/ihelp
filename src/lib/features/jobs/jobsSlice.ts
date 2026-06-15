@@ -16,6 +16,7 @@ export interface Job {
   amount:       number
   frequency?:   string
   date:         string
+  rated?:       boolean   // true once the customer has submitted a rating
 }
 
 interface JobsState {
@@ -46,8 +47,12 @@ const jobsSlice = createSlice({
       const job = state.jobs.find(j => j.id === action.payload)
       if (job) job.escrowStatus = 'released'
     },
+    markJobRated(state, action: PayloadAction<string>) {
+      const job = state.jobs.find(j => j.id === action.payload)
+      if (job) job.rated = true
+    },
   },
 })
 
-export const { setJobs, addJob, updateJobStatus, releaseJobEscrow } = jobsSlice.actions
+export const { setJobs, addJob, updateJobStatus, releaseJobEscrow, markJobRated } = jobsSlice.actions
 export default jobsSlice.reducer

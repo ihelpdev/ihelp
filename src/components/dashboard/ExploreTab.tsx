@@ -7,7 +7,10 @@ import { addJob } from "@/lib/features/jobs/jobsSlice";
 import { lockEscrow } from "@/lib/features/wallet/walletSlice";
 import {
   Search, ChevronDown, ChevronUp, X,
-  Clock, Briefcase, CheckCircle2, ArrowRight, ShieldCheck, Lock
+  Clock, Briefcase, CheckCircle2, ArrowRight, ShieldCheck, Lock,
+  Droplets, Zap, Car, Wind, Sparkles, WashingMachine, Hammer,
+  Brush, Wrench, Leaf, Paintbrush, Shield, Bug, LayoutGrid,
+  MessageSquare, ImagePlus, Star, ChevronLeft, Grid2x2
 } from "lucide-react";
 import { RootState } from "@/lib/store";
 
@@ -28,18 +31,22 @@ interface ModalState {
 export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string) => void }) {
   const dispatch = useDispatch();
 
-  const [search,     setSearch]     = useState("");
-  const [showAllOD,  setShowAllOD]  = useState(false);
-  const [showAllSub, setShowAllSub] = useState(false);
-  const [modal,      setModal]      = useState<ModalState | null>(null);
-  const [toast,      setToast]      = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [search,               setSearch]               = useState("");
+  const [showAllOD,             setShowAllOD]             = useState(false);
+  const [showAllSub,            setShowAllSub]            = useState(false);
+  const [modal,                 setModal]                 = useState<ModalState | null>(null);
+  const [toast,                 setToast]                 = useState<string | null>(null);
+  const [isSubmitting,          setIsSubmitting]          = useState(false);
+  const [expandedImage,         setExpandedImage]         = useState<string | null>(null);
+  const [customerNote,          setCustomerNote]          = useState("");
+  const [noteImages,            setNoteImages]            = useState<string[]>([]);
+  const [isUploadingNoteImages, setIsUploadingNoteImages] = useState(false);
+  const [selectedCategory,      setSelectedCategory]      = useState<string | null>(null);
+  const [showAllCategories,     setShowAllCategories]     = useState(false);
 
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
-  // Portal mount guard — ensures createPortal only runs client-side
-  const [mounted,    setMounted]    = useState(false);
-  const [onDemand,   setOnDemand]   = useState<any[]>([]);
+  const [mounted,  setMounted]  = useState(false);
+  const [onDemand, setOnDemand] = useState<any[]>([]);
   
   useEffect(() => { 
     setMounted(true); 
@@ -65,8 +72,25 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
   const filteredOD  = onDemand.filter(filterFn);
   const filteredSub = SUBS.filter(filterFn);
-  const visibleOD   = showAllOD  ? filteredOD  : filteredOD.slice(0, 2);
   const visibleSub  = showAllSub ? filteredSub : filteredSub.slice(0, 2);
+
+  // Group on-demand services by category, sort by count desc
+  const categoryMap: Record<string, any[]> = {};
+  filteredOD.forEach(svc => {
+    const cat = svc.category || "General";
+    if (!categoryMap[cat]) categoryMap[cat] = [];
+    categoryMap[cat].push(svc);
+  });
+  const sortedCategories = Object.entries(categoryMap)
+    .sort((a, b) => b[1].length - a[1].length);
+  const visibleCategories = showAllCategories
+    ? sortedCategories
+    : sortedCategories.slice(0, 8);
+
+  // Services in the currently selected category
+  const categoryServices = selectedCategory
+    ? (categoryMap[selectedCategory] || [])
+    : [];
 
   const odSvc  = modal?.kind === "on_demand"    ? onDemand.find(s => s.id === modal.serviceId) ?? null : null;
   const subSvc = modal?.kind === "subscription" ? SUBS.find(s => s.id === modal.serviceId) ?? null      : null;
@@ -89,7 +113,34 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   };
   const goStep  = (step: FlowStep, patch?: Partial<ModalState>) =>
     setModal(m => m ? { ...m, step, ...patch } : null);
-  const close   = () => setModal(null);
+  const close   = () => { setModal(null); setCustomerNote(""); setNoteImages([]); };
+
+  // Upload a single image to Cloudinary and append URL to noteImages
+  const handleNoteImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploadingNoteImages(true);
+    try {
+      const uploaded: string[] = [];
+      for (let i = 0; i < e.target.files.length; i++) {
+        const fd = new FormData();
+        fd.append('file', e.target.files[i]);
+        fd.append('upload_preset', 'ihelp-images');
+        const res = await fetch('https://api.cloudinary.com/v1_1/dik1cosdn/image/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.secure_url) uploaded.push(data.secure_url);
+      }
+      setNoteImages(prev => [...prev, ...uploaded]);
+    } catch {
+      setToast('Image upload failed. Please try again.');
+    } finally {
+      setIsUploadingNoteImages(false);
+      // reset the input so the same file can be re-selected if needed
+      e.target.value = '';
+    }
+  };
+
+  const removeNoteImage = (idx: number) =>
+    setNoteImages(prev => prev.filter((_, i) => i !== idx));
 
   const confirmOD = async () => {
     if (!odSvc) return;
@@ -102,7 +153,9 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           type: 'on_demand',
           serviceId: odSvc.id,
           serviceName: odSvc.name,
-          amount: odSvc.suggested_base_rate_ngn
+          amount: odSvc.suggested_base_rate_ngn,
+          customerNote: customerNote.trim() || null,
+          customerNoteImages: noteImages,
         })
       });
       
@@ -189,6 +242,71 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                 <strong style={{ color: "#002d62" }}>NGN {odSvc.suggested_base_rate_ngn.toLocaleString()} / {odSvc.unit}</strong>
               </div>
               <InfoBox lines={["Vetted pro dispatched to your location.", "Payment held in escrow until completion.", "Funds released after your confirmation."]} />
+              {/* Customer note + images */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <MessageSquare style={{ width: 14, height: 14, color: "#6b7280" }} />
+                  Note for provider <span style={{ fontWeight: 400, color: "#9ca3af" }}>(optional)</span>
+                </label>
+                <textarea
+                  value={customerNote}
+                  onChange={e => setCustomerNote(e.target.value)}
+                  placeholder="e.g. Gate code is 1234. Please call before arriving."
+                  rows={3}
+                  style={{
+                    width: "100%", resize: "none", padding: "10px 12px",
+                    borderRadius: "10px", border: "1.5px solid #e5e7eb",
+                    fontSize: "13px", color: "#111827", outline: "none",
+                    fontFamily: "inherit", lineHeight: 1.5,
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={e => (e.target.style.borderColor = "#002d62")}
+                  onBlur={e  => (e.target.style.borderColor = "#e5e7eb")}
+                />
+
+                {/* Thumbnail strip + upload button */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+                  {noteImages.map((url, idx) => (
+                    <div key={idx} style={{ position: "relative", width: 60, height: 60, borderRadius: 8, overflow: "hidden", border: "1px solid #e5e7eb", flexShrink: 0 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Attachment ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button
+                        type="button"
+                        onClick={() => removeNoteImage(idx)}
+                        style={{
+                          position: "absolute", top: 2, right: 2,
+                          background: "rgba(0,0,0,0.55)", border: "none", borderRadius: "50%",
+                          width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer", padding: 0,
+                        }}
+                      >
+                        <X style={{ width: 10, height: 10, color: "#fff" }} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Upload trigger */}
+                  <label style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "6px 12px", borderRadius: 8,
+                    border: "1.5px dashed #d1d5db", cursor: isUploadingNoteImages ? "not-allowed" : "pointer",
+                    fontSize: 12, fontWeight: 500, color: "#6b7280",
+                    background: "#f9fafb", flexShrink: 0,
+                    opacity: isUploadingNoteImages ? 0.6 : 1,
+                  }}>
+                    <ImagePlus style={{ width: 14, height: 14 }} />
+                    {isUploadingNoteImages ? "Uploading…" : "Add photos"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      disabled={isUploadingNoteImages}
+                      onChange={handleNoteImageUpload}
+                    />
+                  </label>
+                </div>
+              </div>
               <ModalBtn label={`Request ${odSvc?.name}`} onClick={() => goStep("confirm")} />
             </div>
           )}
@@ -200,6 +318,35 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
               <div style={{ background: "#f9fafb", borderRadius: "10px", padding: "12px 16px", display: "flex", flexDirection: "column", gap: "8px", fontSize: "14px" }}>
                 <SummaryRow label="Service" value={odSvc.name} />
                 <SummaryRow label="Escrow Amount" value={`NGN ${odSvc.suggested_base_rate_ngn.toLocaleString()}`} highlight />
+                {(customerNote.trim() || noteImages.length > 0) && (
+                  <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "8px", marginTop: "4px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {customerNote.trim() && (
+                      <div>
+                        <div style={{ color: "#6b7280", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                          <MessageSquare style={{ width: 12, height: 12 }} /> Your note
+                        </div>
+                        <div style={{ color: "#374151", fontSize: "13px", fontStyle: "italic" }}>&ldquo;{customerNote.trim()}&rdquo;</div>
+                      </div>
+                    )}
+                    {noteImages.length > 0 && (
+                      <div>
+                        <div style={{ color: "#6b7280", marginBottom: 6, fontSize: 12 }}>Attached photos ({noteImages.length})</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {noteImages.map((url, i) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={i}
+                              src={url}
+                              alt={`Attachment ${i + 1}`}
+                              onClick={() => setExpandedImage(url)}
+                              style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer" }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <ModalBtn label={isSubmitting ? "Confirming..." : "Confirm & Lock Funds"} onClick={confirmOD} icon={<ShieldCheck style={{ width: 16, height: 16 }} />} disabled={isSubmitting} />
             </div>
@@ -333,29 +480,88 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           </div>
         </div>
 
-        {/* On-Demand */}
+        {/* Browse Categories */}
         <section>
-          <h3 className="font-semibold text-on-surface mb-3 flex items-center gap-2 text-sm">
-            <Briefcase className="w-4 h-4 text-primary" /> On-Demand Pros
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {visibleOD.map(svc => (
-              <ServiceCard
-                key={svc.id}
-                title={svc.name}
-                badge="Pro"
-                badgeClass="bg-primary-container text-on-primary-container"
-                description={svc.description}
-                meta={`NGN ${svc.suggested_base_rate_ngn.toLocaleString()} / ${svc.unit === "hour" ? "hr" : svc.unit}`}
-                locked={!profileCompleted}
-                onSelect={() => openOD(svc.id)}
-                coverImageUrl={svc.coverImageUrl}
-                tags={svc.tags}
-              />
-            ))}
-          </div>
-          {filteredOD.length > 2 && (
-            <ToggleBtn expanded={showAllOD} count={filteredOD.length} label="services" onClick={() => setShowAllOD(v => !v)} />
+          {selectedCategory ? (
+            // ── Drill-down: services within a category ──
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                >
+                  <ChevronLeft className="w-4 h-4" /> All Categories
+                </button>
+                <span className="text-on-surface-variant text-sm">/</span>
+                <span className="text-sm font-bold text-on-surface flex items-center gap-1.5">
+                  {getCategoryIcon(selectedCategory)} {selectedCategory}
+                </span>
+                <span className="ml-auto text-xs text-on-surface-variant">{categoryServices.length} service{categoryServices.length !== 1 ? "s" : ""}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {categoryServices.map((svc: any) => (
+                  <ServiceCard
+                    key={svc.id}
+                    title={svc.name}
+                    badge="Pro"
+                    badgeClass="bg-primary-container text-on-primary-container"
+                    description={svc.description}
+                    meta={`NGN ${svc.suggested_base_rate_ngn.toLocaleString()} / ${svc.unit === "hour" ? "hr" : svc.unit}`}
+                    locked={!profileCompleted}
+                    onSelect={() => openOD(svc.id)}
+                    coverImageUrl={svc.coverImageUrl}
+                    tags={svc.tags}
+                    category={svc.category}
+                    ratingAvg={svc.ratingAvg}
+                    ratingCount={svc.ratingCount}
+                  />
+                ))}
+              </div>
+              {categoryServices.length === 0 && (
+                <p className="text-sm text-on-surface-variant text-center py-8">No services in this category yet.</p>
+              )}
+            </div>
+          ) : (
+            // ── Category grid ──
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-on-surface flex items-center gap-2 text-sm">
+                  <Grid2x2 className="w-4 h-4 text-primary" /> Browse Categories
+                </h3>
+                <span className="text-xs text-on-surface-variant">{sortedCategories.length} categories</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {visibleCategories.map(([cat, svcs]) => {
+                  const colorCls = CATEGORY_COLORS[cat] ?? "bg-surface-container text-on-surface-variant";
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-outline-variant bg-surface-container-lowest hover:shadow-md hover:border-primary/40 transition-all group text-center`}
+                    >
+                      <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorCls} group-hover:scale-110 transition-transform`}>
+                        {getCategoryIconLg(cat)}
+                      </span>
+                      <span className="text-xs font-semibold text-on-surface leading-tight">{cat}</span>
+                      <span className="text-[10px] text-on-surface-variant">{svcs.length} service{svcs.length !== 1 ? "s" : ""}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {sortedCategories.length > 8 && (
+                <button
+                  onClick={() => setShowAllCategories(v => !v)}
+                  className="flex items-center gap-1 text-primary font-semibold text-sm hover:underline mt-1"
+                >
+                  {showAllCategories
+                    ? <><ChevronUp className="w-4 h-4" /> Show less</>  
+                    : <><ChevronDown className="w-4 h-4" /> View all {sortedCategories.length} categories</>}
+                </button>
+              )}
+              {sortedCategories.length === 0 && onDemand.length === 0 && (
+                <p className="text-sm text-on-surface-variant text-center py-8">No services available yet.</p>
+              )}
+            </div>
           )}
         </section>
 
@@ -393,10 +599,94 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
 // ── Sub-components ──────────────────────────────────────────────────────────────
 
-function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSelect, coverImageUrl, tags }: {
+function getCategoryIcon(category: string) {
+  const cls = "w-3 h-3 shrink-0";
+  const map: Record<string, React.ReactNode> = {
+    "Plumbing":     <Droplets className={cls} />,
+    "Electrical":   <Zap className={cls} />,
+    "Auto Mechanic":<Car className={cls} />,
+    "AC Repair":    <Wind className={cls} />,
+    "Deep Cleaning":<Sparkles className={cls} />,
+    "Laundry":      <WashingMachine className={cls} />,
+    "Carpentry":    <Hammer className={cls} />,
+    "Cleaning":     <Brush className={cls} />,
+    "Maintenance":  <Wrench className={cls} />,
+    "Repairs":      <Hammer className={cls} />,
+    "Gardening":    <Leaf className={cls} />,
+    "Painting":     <Paintbrush className={cls} />,
+    "Security":     <Shield className={cls} />,
+    "Pest Control": <Bug className={cls} />,
+    "General":      <LayoutGrid className={cls} />,
+  };
+  return map[category] ?? <LayoutGrid className={cls} />;
+}
+
+function getCategoryIconLg(category: string) {
+  const cls = "w-5 h-5";
+  const map: Record<string, React.ReactNode> = {
+    "Plumbing":     <Droplets className={cls} />,
+    "Electrical":   <Zap className={cls} />,
+    "Auto Mechanic":<Car className={cls} />,
+    "AC Repair":    <Wind className={cls} />,
+    "Deep Cleaning":<Sparkles className={cls} />,
+    "Laundry":      <WashingMachine className={cls} />,
+    "Carpentry":    <Hammer className={cls} />,
+    "Cleaning":     <Brush className={cls} />,
+    "Maintenance":  <Wrench className={cls} />,
+    "Repairs":      <Hammer className={cls} />,
+    "Gardening":    <Leaf className={cls} />,
+    "Painting":     <Paintbrush className={cls} />,
+    "Security":     <Shield className={cls} />,
+    "Pest Control": <Bug className={cls} />,
+    "General":      <LayoutGrid className={cls} />,
+  };
+  return map[category] ?? <LayoutGrid className={cls} />;
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "Plumbing":     "bg-blue-100 text-blue-800",
+  "Electrical":   "bg-yellow-100 text-yellow-800",
+  "Auto Mechanic":"bg-orange-100 text-orange-800",
+  "AC Repair":    "bg-cyan-100 text-cyan-800",
+  "Deep Cleaning":"bg-emerald-100 text-emerald-800",
+  "Laundry":      "bg-indigo-100 text-indigo-800",
+  "Carpentry":    "bg-amber-100 text-amber-800",
+  "Cleaning":     "bg-teal-100 text-teal-800",
+  "Maintenance":  "bg-gray-100 text-gray-700",
+  "Repairs":      "bg-red-100 text-red-800",
+  "Gardening":    "bg-green-100 text-green-800",
+  "Painting":     "bg-purple-100 text-purple-800",
+  "Security":     "bg-slate-100 text-slate-800",
+  "Pest Control": "bg-lime-100 text-lime-800",
+  "General":      "bg-surface-container text-on-surface-variant",
+};
+
+function StarDisplay({ avg, count }: { avg: number | null; count: number }) {
+  if (!avg || count === 0) return null;
+  const full  = Math.floor(avg);
+  const frac  = avg - full;
+  return (
+    <div className="flex items-center gap-1">
+      {[1,2,3,4,5].map(n => (
+        <Star
+          key={n}
+          className="w-3 h-3"
+          fill={n <= full ? "#f59e0b" : (n === full + 1 && frac >= 0.5 ? "#f59e0b" : "none")}
+          stroke="#f59e0b"
+          strokeWidth={1.5}
+        />
+      ))}
+      <span className="text-[10px] font-semibold text-amber-600">{avg.toFixed(1)}</span>
+      <span className="text-[10px] text-on-surface-variant">({count})</span>
+    </div>
+  );
+}
+
+function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSelect, coverImageUrl, tags, category, ratingAvg, ratingCount }: {
   title: string; badge: string; badgeClass: string; description: string; meta: string; locked?: boolean; onSelect: () => void;
-  coverImageUrl?: string | null; tags?: string[];
+  coverImageUrl?: string | null; tags?: string[]; category?: string; ratingAvg?: number | null; ratingCount?: number;
 }) {
+  const chipClass = category ? (CATEGORY_COLORS[category] ?? "bg-surface-container text-on-surface-variant") : "";
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:border-primary/50 hover:shadow-md transition-all">
       {coverImageUrl && (
@@ -410,7 +700,13 @@ function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSe
           <h4 className="font-semibold text-on-surface text-sm leading-snug">{title}</h4>
           <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${badgeClass}`}>{badge}</span>
         </div>
+        {category && (
+          <span className={`self-start inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${chipClass}`}>
+            {getCategoryIcon(category)} {category}
+          </span>
+        )}
         <p className="text-xs text-on-surface-variant leading-relaxed flex-1">{description}</p>
+        <StarDisplay avg={ratingAvg ?? null} count={ratingCount ?? 0} />
         
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-auto pb-2">

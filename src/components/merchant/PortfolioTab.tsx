@@ -195,7 +195,7 @@ export default function PortfolioTab() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface">Category</label>
               <select 
-                value={["Laundry", "Cleaning", "Maintenance", "Repairs", "General"].includes(formData.category || '') ? formData.category : (formData.category ? "Other" : "General")} 
+                value={["Plumbing", "Electrical", "Auto Mechanic", "AC Repair", "Deep Cleaning", "Laundry", "Carpentry", "Cleaning", "Maintenance", "Repairs", "Gardening", "Painting", "Security", "Pest Control", "General"].includes(formData.category || '') ? formData.category : (formData.category ? "Other" : "General")} 
                 onChange={e => {
                   const val = e.target.value;
                   if (val === "Other") {
@@ -207,14 +207,24 @@ export default function PortfolioTab() {
                 }} 
                 className="px-4 py-3 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary transition-colors text-sm"
               >
+                <option value="Plumbing">Plumbing</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Auto Mechanic">Auto Mechanic</option>
+                <option value="AC Repair">AC Repair</option>
+                <option value="Deep Cleaning">Deep Cleaning</option>
                 <option value="Laundry">Laundry</option>
+                <option value="Carpentry">Carpentry</option>
                 <option value="Cleaning">Cleaning</option>
                 <option value="Maintenance">Maintenance</option>
                 <option value="Repairs">Repairs</option>
+                <option value="Gardening">Gardening</option>
+                <option value="Painting">Painting</option>
+                <option value="Security">Security</option>
+                <option value="Pest Control">Pest Control</option>
                 <option value="General">General</option>
                 <option value="Other">Other (Custom)</option>
               </select>
-              {(!["Laundry", "Cleaning", "Maintenance", "Repairs", "General"].includes(formData.category || '') || formData.category === "Other") && (
+              {(!["Plumbing", "Electrical", "Auto Mechanic", "AC Repair", "Deep Cleaning", "Laundry", "Carpentry", "Cleaning", "Maintenance", "Repairs", "Gardening", "Painting", "Security", "Pest Control", "General"].includes(formData.category || '') || formData.category === "Other") && (
                 <input 
                   type="text"
                   placeholder="Enter custom category"

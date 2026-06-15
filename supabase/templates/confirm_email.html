@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your i-help account</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f3f4f6;
+      padding: 40px 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .header {
+      background-color: #002d62;
+      padding: 32px 40px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .content {
+      padding: 40px;
+      color: #374151;
+      line-height: 1.6;
+    }
+    .content h2 {
+      color: #111827;
+      margin-top: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .content p {
+      margin: 0 0 24px 0;
+      font-size: 16px;
+    }
+    .btn-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #002d62;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 24px 40px;
+      text-align: center;
+      border-top: 1px solid #e5e7eb;
+    }
+    .footer p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .footer a {
+      color: #002d62;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1>i-help</h1>
+      </div>
+      <div class="content">
+        <h2>Welcome to i-help! 👋</h2>
+        <p>We're thrilled to have you join our community. To get started and finish setting up your account, please confirm your email address by clicking the button below.</p>
+        
+        <div class="btn-container">
+          <a href="{{ .ConfirmationURL }}" class="btn">Confirm Email Address</a>
+        </div>
+        
+        <p>If you didn't create an account with i-help, you can safely ignore this email.</p>
+      </div>
+      <div class="footer">
+        <p>Need help? Contact our <a href="mailto:support@i-help.app">support team</a>.</p>
+        <p style="margin-top: 8px; font-size: 12px;">&copy; 2026 i-help. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

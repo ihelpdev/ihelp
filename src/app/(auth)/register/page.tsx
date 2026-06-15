@@ -50,6 +50,7 @@ function RegisterForm() {
           name: formData.name,
           role: role,
         },
+        emailRedirectTo: "https://ihelp-ten.vercel.app/login",
       },
     });
     setIsLoading(false);

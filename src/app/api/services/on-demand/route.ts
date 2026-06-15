@@ -14,23 +14,33 @@ export async function GET() {
 
     const services = await prisma.merchantListing.findMany({
       where: whereClause,
-      // order by latest modified
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        ratings: {
+          select: { rating: true },
+        },
+      },
     });
 
     const mapped = services.map(s => {
       const details = typeof s.details === 'object' && s.details !== null ? s.details : {};
+      const ratingCount = s.ratings.length;
+      const ratingAvg = ratingCount
+        ? Math.round((s.ratings.reduce((sum, r) => sum + r.rating, 0) / ratingCount) * 10) / 10
+        : null;
       return {
-        id: s.id,
-        name: s.name,
-        slug: s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), // Generate a slug if needed
-        category: s.category,
-        tags: s.tags,
-        coverImageUrl: s.coverImageUrl,
-        description: s.description,
+        id:                     s.id,
+        name:                   s.name,
+        slug:                   s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        category:               s.category,
+        tags:                   s.tags,
+        coverImageUrl:          s.coverImageUrl,
+        description:            s.description,
         suggested_base_rate_ngn: s.baseRateNgn,
-        unit: s.unit,
-        images: (details as any).portfolioImageUrls || []
+        unit:                   s.unit,
+        images:                 (details as any).portfolioImageUrls || [],
+        ratingAvg,
+        ratingCount,
       };
     });
 

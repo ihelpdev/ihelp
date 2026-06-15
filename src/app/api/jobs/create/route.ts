@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { type, serviceId, serviceName, amount, frequency } = body;
+    const { type, serviceId, serviceName, amount, frequency, customerNote, customerNoteImages } = body;
 
     if (!type || !serviceName || amount === undefined) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -22,30 +22,34 @@ export async function POST(req: Request) {
     if (type === 'on_demand') {
       const job = await prisma.job.create({
         data: {
-          customerId:  user.id,
-          serviceId:   serviceId ?? null,
-          serviceType: 'on_demand',
-          amount:      parseFloat(amount),
-          status:      'PENDING',
-          escrowStatus:'LOCKED',
-          description: serviceName,
-          frequency:   null,
+          customerId:         user.id,
+          serviceId:          serviceId ?? null,
+          serviceType:        'on_demand',
+          amount:             parseFloat(amount),
+          status:             'PENDING',
+          escrowStatus:       'LOCKED',
+          description:        serviceName,
+          customerNote:       customerNote?.trim() || null,
+          customerNoteImages: Array.isArray(customerNoteImages) ? customerNoteImages : [],
+          frequency:          null,
         },
       });
 
       return NextResponse.json({
         success: true,
         data: {
-          id:           job.id,
-          customerId:   job.customerId,
-          merchantId:   job.merchantId ?? null,
-          serviceId:    job.serviceId  ?? '',
-          serviceName:  job.description ?? serviceName,
-          type:         'on_demand',
-          status:       'pending',
-          escrowStatus: 'locked',
-          amount:       job.amount,
-          date:         job.createdAt.toISOString().slice(0, 10),
+          id:                 job.id,
+          customerId:         job.customerId,
+          merchantId:         job.merchantId ?? null,
+          serviceId:          job.serviceId  ?? '',
+          serviceName:        job.description ?? serviceName,
+          type:               'on_demand',
+          status:             'pending',
+          escrowStatus:       'locked',
+          amount:             job.amount,
+          customerNote:       job.customerNote ?? null,
+          customerNoteImages: job.customerNoteImages ?? [],
+          date:               job.createdAt.toISOString().slice(0, 10),
         },
       }, { status: 201 });
 
