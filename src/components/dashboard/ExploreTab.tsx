@@ -47,11 +47,13 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
   const [mounted,  setMounted]  = useState(false);
   const [onDemand, setOnDemand] = useState<any[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
   
   useEffect(() => { 
     setMounted(true); 
     const fetchOnDemand = async () => {
       try {
+        setIsLoadingServices(true);
         const res = await fetch("/api/services/on-demand");
         if (res.ok) {
           const data = await res.json();
@@ -61,6 +63,8 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
         }
       } catch (err) {
         console.error("Error fetching on-demand services:", err);
+      } finally {
+        setIsLoadingServices(false);
       }
     };
     fetchOnDemand();
@@ -482,7 +486,22 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
         {/* Browse Categories */}
         <section>
-          {selectedCategory ? (
+          {isLoadingServices ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="h-5 w-40 bg-surface-container rounded animate-pulse"></div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                  <div key={n} className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-outline-variant bg-surface-container-lowest h-[116px] animate-pulse">
+                    <div className="w-10 h-10 rounded-xl bg-surface-container"></div>
+                    <div className="h-3 w-20 bg-surface-container rounded mt-1"></div>
+                    <div className="h-2 w-12 bg-surface-container rounded mt-1"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : selectedCategory ? (
             // ── Drill-down: services within a category ──
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">

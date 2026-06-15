@@ -25,6 +25,7 @@ export interface AuthState {
   showProfileModal: boolean;
   loading: boolean;
   error: string | null;
+  isInitialized: boolean;
 }
 
 const initialState: AuthState = {
@@ -34,6 +35,7 @@ const initialState: AuthState = {
   showProfileModal: false,
   loading: false,
   error: null,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -61,8 +63,11 @@ const authSlice = createSlice({
     setShowProfileModal: (state, action: PayloadAction<boolean>) => {
       state.showProfileModal = action.payload;
     },
+    setInitialized: (state, action: PayloadAction<boolean>) => {
+      state.isInitialized = action.payload;
+    },
   },
 })
 
-export const { setUser, setFullUser, logout, setProfileCompleted, setShowProfileModal } = authSlice.actions
+export const { setUser, setFullUser, logout, setProfileCompleted, setShowProfileModal, setInitialized } = authSlice.actions
 export default authSlice.reducer

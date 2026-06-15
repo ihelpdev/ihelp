@@ -42,6 +42,7 @@ function RegisterForm() {
   const handleSignup = async () => {
     setErrorMsg(null);
     setIsLoading(true);
+    console.log("[Register] Attempting Supabase signUp with email:", formData.email);
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -56,10 +57,12 @@ function RegisterForm() {
     setIsLoading(false);
 
     if (error) {
-      console.log({error})
+      console.error("[Register] Supabase signUp failed:", error);
       setErrorMsg(error.message);
       return;
     }
+
+    console.log("[Register] Supabase signUp succeeded. User ID:", data.user?.id);
 
     if (data.user) {
       // Sync immediately so the user exists in Prisma
@@ -72,8 +75,9 @@ function RegisterForm() {
   };
 
   const syncUser = async (userId: string) => {
+    console.log(`[Register] Starting syncUser for ID: ${userId}...`);
     try {
-      await fetch("/api/auth/sync-user", {
+      const response = await fetch("/api/auth/sync-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,8 +87,16 @@ function RegisterForm() {
           role: role,
         }),
       });
+      
+      console.log(`[Register] sync-user API responded with status: ${response.status}`);
+      if (!response.ok) {
+        console.warn(`[Register] sync-user failed with status ${response.status}. Expected 200.`);
+      } else {
+        const json = await response.json();
+        console.log(`[Register] sync-user success:`, json);
+      }
     } catch (e) {
-      console.error("Failed to sync user:", e);
+      console.error("[Register] Exception caught during sync-user fetch:", e);
     }
   };
 

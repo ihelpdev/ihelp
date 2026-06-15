@@ -1,52 +1,71 @@
 "use client";
 
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { setFullUser } from "@/lib/features/auth/authSlice";
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { setFullUser, setInitialized } from "@/lib/features/auth/authSlice";
 import { setJobs } from "@/lib/features/jobs/jobsSlice";
 import { setListings } from "@/lib/features/portfolio/portfolioSlice";
+import { RootState } from "@/lib/store";
 
 export default function MerchantDataLoader() {
   const dispatch = useDispatch();
+  const router = useRouter();
+  const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
+  const loadingStarted = useRef(false);
 
   useEffect(() => {
-    const loadProfile = async () => {
+    if (isInitialized || loadingStarted.current) return;
+    loadingStarted.current = true;
+
+    const loadData = async () => {
       try {
-        const res = await fetch("/api/profile/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.user) {
-            dispatch(setFullUser(data.user));
+        const [profileRes, jobsRes, portfolioRes] = await Promise.all([
+          fetch("/api/profile/me"),
+          fetch("/api/jobs/list"),
+          fetch("/api/merchant/portfolio"),
+        ]);
+
+        if (profileRes.status === 401 || profileRes.status === 403) {
+          router.replace("/login");
+          return;
+        }
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData.success && profileData.user) {
+            // Check role mismatch
+            if (profileData.user.role === "CUSTOMER") {
+              router.replace("/customer/dashboard");
+              return;
+            }
+            dispatch(setFullUser(profileData.user));
+          } else {
+            router.replace("/login");
+            return;
           }
         }
-      } catch (err) { console.error("Failed to load user profile:", err); }
-    };
 
-    const loadJobs = async () => {
-      try {
-        const res = await fetch("/api/jobs/list");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) dispatch(setJobs(data.data));
+        if (jobsRes.ok) {
+          const jobsData = await jobsRes.json();
+          if (jobsData.success) dispatch(setJobs(jobsData.data));
         }
-      } catch (err) { console.error("Failed to load jobs:", err); }
-    };
 
-    const loadPortfolio = async () => {
-      try {
-        const res = await fetch("/api/merchant/portfolio");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) dispatch(setListings(data.data));
+        if (portfolioRes.ok) {
+          const portfolioData = await portfolioRes.json();
+          if (portfolioData.success) dispatch(setListings(portfolioData.data));
         }
-      } catch (err) { console.error("Failed to load portfolio:", err); }
+
+        dispatch(setInitialized(true));
+      } catch (err) {
+        console.error("Failed to load global merchant data:", err);
+        router.replace("/login");
+      }
     };
 
-    loadProfile();
-    loadJobs();
-    loadPortfolio();
+    loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isInitialized, router, dispatch]);
 
   return null;
 }
