@@ -26,7 +26,7 @@ export async function GET(req: Request) {
       ? {
           OR: [
             { merchantId: user.id },
-            { merchantId: null }
+            { merchantId: null, serviceType: 'subscription' }
           ]
         }
       : { customerId: user.id };

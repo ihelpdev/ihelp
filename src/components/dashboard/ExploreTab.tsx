@@ -562,7 +562,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                         {getCategoryIconLg(cat)}
                       </span>
                       <span className="text-xs font-semibold text-on-surface leading-tight">{cat}</span>
-                      <span className="text-[10px] text-on-surface-variant">{svcs.length} service{svcs.length !== 1 ? "s" : ""}</span>
+                      {/* <span className="text-[10px] text-on-surface-variant">{svcs.length} service{svcs.length !== 1 ? "s" : ""}</span> */}
                     </button>
                   );
                 })}

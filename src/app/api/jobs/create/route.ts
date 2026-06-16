@@ -20,9 +20,19 @@ export async function POST(req: Request) {
     }
 
     if (type === 'on_demand') {
+      let assignedMerchantId = null;
+      if (serviceId) {
+        const svc = await prisma.merchantListing.findUnique({
+          where: { id: serviceId },
+          select: { merchantId: true }
+        });
+        assignedMerchantId = svc?.merchantId || null;
+      }
+
       const job = await prisma.job.create({
         data: {
           customerId:         user.id,
+          merchantId:         assignedMerchantId,
           serviceId:          serviceId ?? null,
           serviceType:        'on_demand',
           amount:             parseFloat(amount),
