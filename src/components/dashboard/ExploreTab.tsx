@@ -88,6 +88,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
+            console.log("On demand service", data)
             setOnDemand(data.data);
           }
         }

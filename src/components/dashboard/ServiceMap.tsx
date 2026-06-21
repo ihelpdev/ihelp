@@ -6,6 +6,17 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 import { Star } from "lucide-react";
+import L from "leaflet";
+
+// Define a custom red icon for the user's location
+const userIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 export type ServiceMapData = {
   id: string;
@@ -62,9 +73,9 @@ export default function ServiceMap({ services, onSelectService, locked, heightCl
         />
         <RecenterMap center={center} zoom={zoom} />
         
-        {/* Optional: Marker for user's own location */}
+        {/* Marker for user's own location */}
         {userLoc && (
-          <Marker position={userLoc}>
+          <Marker position={userLoc} icon={userIcon}>
             <Popup>
               <span className="font-semibold text-primary">Your Location</span>
             </Popup>
