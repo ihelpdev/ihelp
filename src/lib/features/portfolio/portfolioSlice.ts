@@ -18,6 +18,7 @@ export interface ListingDetails {
   portfolioImageUrls: string[]
   certifications:     string[]
   notes:              string        // technical / internal notes
+  locations?:         Array<{ lat: number; lng: number; address?: string }>
 }
 
 export interface MerchantListing {

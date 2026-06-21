@@ -3,6 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { MerchantListing, blankListing, addListing, updateListing, removeListing, UNIT_LABELS } from "@/lib/features/portfolio/portfolioSlice";
 import { Briefcase, Plus, Edit2, Trash2, MapPin, Wrench, Award, CheckCircle2, X } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const LocationPickerMap = dynamic(() => import("./LocationPickerMap"), { ssr: false, loading: () => <div className="h-[300px] bg-surface-container animate-pulse rounded-xl" /> });
 
 export default function PortfolioTab() {
   const dispatch = useDispatch();
@@ -64,7 +67,8 @@ export default function PortfolioTab() {
           portfolioImageUrls: [],
           availabilityDays: [],
           certifications: [],
-          notes: ''
+          notes: '',
+          locations: []
         };
         return {
           ...prev,
@@ -320,7 +324,16 @@ export default function PortfolioTab() {
                 </label>
               </div>
 
-              <div className="flex flex-col gap-3 md:col-span-2">
+              <div className="flex flex-col gap-3 mt-2 md:col-span-2">
+                <label className="text-sm font-semibold text-on-surface">Service Locations</label>
+                <p className="text-xs text-on-surface-variant">Click on the map to add the locations where you provide this service.</p>
+                <LocationPickerMap 
+                  locations={formData.details?.locations || []} 
+                  onChange={(locs) => setFormData({ ...formData, details: { ...formData.details!, locations: locs }})}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 mt-2 md:col-span-2">
                 <label className="text-sm font-semibold text-on-surface">Portfolio Images</label>
                 
                 {/* Image List */}

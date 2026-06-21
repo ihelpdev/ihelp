@@ -39,6 +39,7 @@ export async function GET() {
         suggested_base_rate_ngn: s.baseRateNgn,
         unit:                   s.unit,
         images:                 (details as any).portfolioImageUrls || [],
+        locations:              (details as any).locations || [],
         ratingAvg,
         ratingCount,
       };

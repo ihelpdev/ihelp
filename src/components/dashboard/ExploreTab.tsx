@@ -10,9 +10,12 @@ import {
   Clock, Briefcase, CheckCircle2, ArrowRight, ShieldCheck, Lock,
   Droplets, Zap, Car, Wind, Sparkles, WashingMachine, Hammer,
   Brush, Wrench, Leaf, Paintbrush, Shield, Bug, LayoutGrid,
-  MessageSquare, ImagePlus, Star, ChevronLeft, Grid2x2
+  MessageSquare, ImagePlus, Star, ChevronLeft, Grid2x2, Map as MapIcon, List as ListIcon
 } from "lucide-react";
 import { RootState } from "@/lib/store";
+import dynamic from "next/dynamic";
+
+const ServiceMap = dynamic(() => import("./ServiceMap"), { ssr: false, loading: () => <div className="h-[600px] w-full bg-surface-container rounded-xl animate-pulse" /> });
 
 import servicesRaw from "@/mockup/services.json";
 
@@ -43,6 +46,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const [isUploadingNoteImages, setIsUploadingNoteImages] = useState(false);
   const [selectedCategory,      setSelectedCategory]      = useState<string | null>(null);
   const [showAllCategories,     setShowAllCategories]     = useState(false);
+  const [isMapExpanded,         setIsMapExpanded]         = useState(false);
 
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
   const [mounted,  setMounted]  = useState(false);
@@ -483,6 +487,27 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
             />
           </div>
         </div>
+
+        {/* Map View */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-on-surface flex items-center gap-2 text-sm">
+              <MapIcon className="w-4 h-4 text-primary" /> Services Near You
+            </h3>
+            <button 
+              onClick={() => setIsMapExpanded(!isMapExpanded)}
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              {isMapExpanded ? "Collapse Map" : "Expand Map"}
+            </button>
+          </div>
+          <ServiceMap 
+            services={filteredOD} 
+            onSelectService={openOD} 
+            locked={!profileCompleted} 
+            heightClass={isMapExpanded ? "h-[600px]" : "h-[300px]"}
+          />
+        </section>
 
         {/* Browse Categories */}
         <section>
