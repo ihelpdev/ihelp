@@ -10,7 +10,7 @@ import {
   Clock, Briefcase, CheckCircle2, ArrowRight, ShieldCheck, Lock,
   Droplets, Zap, Car, Wind, Sparkles, WashingMachine, Hammer,
   Brush, Wrench, Leaf, Paintbrush, Shield, Bug, LayoutGrid,
-  MessageSquare, ImagePlus, Star, ChevronLeft, Grid2x2, Map as MapIcon, List as ListIcon
+  MessageSquare, ImagePlus, Star, ChevronLeft, Grid2x2, Map as MapIcon, List as ListIcon, Filter
 } from "lucide-react";
 import { RootState } from "@/lib/store";
 import dynamic from "next/dynamic";
@@ -18,6 +18,18 @@ import dynamic from "next/dynamic";
 const ServiceMap = dynamic(() => import("./ServiceMap"), { ssr: false, loading: () => <div className="h-[600px] w-full bg-surface-container rounded-xl animate-pulse" /> });
 
 import servicesRaw from "@/mockup/services.json";
+
+function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return R * c; // Distance in km
+}
 
 const SUBS        = servicesRaw.subscription_base_services;
 const FREQ_MATRIX = servicesRaw.subscription_frequency_matrix;
@@ -48,6 +60,12 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const [showAllCategories,     setShowAllCategories]     = useState(false);
   const [isMapExpanded,         setIsMapExpanded]         = useState(false);
 
+  const [userLoc,               setUserLoc]               = useState<{ lat: number; lng: number } | null>(null);
+  const [filterCategory,        setFilterCategory]        = useState<string>("All");
+  const [filterDistance,        setFilterDistance]        = useState<number | null>(null); // in km
+  const [filterPrice,           setFilterPrice]           = useState<number | null>(null); // max price
+  const [showFilters,           setShowFilters]           = useState(false);
+
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
   const [mounted,  setMounted]  = useState(false);
   const [onDemand, setOnDemand] = useState<any[]>([]);
@@ -55,6 +73,14 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   
   useEffect(() => { 
     setMounted(true); 
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.warn("Geolocation failed", err),
+        { timeout: 10000 }
+      );
+    }
+
     const fetchOnDemand = async () => {
       try {
         setIsLoadingServices(true);
@@ -74,9 +100,30 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
     fetchOnDemand();
   }, []);
 
-  const filterFn = (s: { name: string; description: string }) =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.description.toLowerCase().includes(search.toLowerCase());
+  const filterFn = (s: any) => {
+    // 1. Text Search
+    if (search && !s.name.toLowerCase().includes(search.toLowerCase()) && !s.description.toLowerCase().includes(search.toLowerCase())) return false;
+    
+    // 2. Category Filter (Only applies if the item has a category)
+    if (filterCategory !== "All" && s.category !== undefined && s.category !== filterCategory) return false;
+
+    // 3. Price Filter (Only applies if the item has a suggested_base_rate_ngn)
+    if (filterPrice !== null && s.suggested_base_rate_ngn !== undefined && s.suggested_base_rate_ngn > filterPrice) return false;
+
+    // 4. Distance Filter (Only applies if we have a userLoc and the item has locations)
+    if (filterDistance !== null && s.locations !== undefined) {
+      if (!userLoc) return false; // If distance filter is active but no user location, omit
+      if (!s.locations || s.locations.length === 0) return false;
+      
+      const isWithinDist = s.locations.some((loc: any) => {
+        const d = getDistanceInKm(userLoc.lat, userLoc.lng, loc.lat, loc.lng);
+        return d <= filterDistance;
+      });
+      if (!isWithinDist) return false;
+    }
+
+    return true;
+  };
 
   const filteredOD  = onDemand.filter(filterFn);
   const filteredSub = SUBS.filter(filterFn);
@@ -477,16 +524,59 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
             <h2 className="text-2xl font-bold text-primary">Explore Services</h2>
             <p className="text-sm text-on-surface-variant mt-1">Find vetted pros or set up a recurring subscription.</p>
           </div>
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-outline w-4 h-4" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search services..."
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:outline-none focus:border-primary transition-colors"
-            />
+          <div className="relative w-full md:w-80 flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-outline w-4 h-4" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search services..."
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <button 
+              onClick={() => setShowFilters(!showFilters)} 
+              className={`p-2 rounded-lg border border-outline-variant transition-colors flex shrink-0 items-center justify-center ${showFilters ? "bg-primary text-on-primary border-primary" : "bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container"}`}
+              title="Filters"
+            >
+              <Filter className="w-5 h-5" />
+            </button>
           </div>
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col md:flex-row gap-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-xs font-semibold text-on-surface">Category</label>
+              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="w-full text-sm bg-surface rounded-lg border border-outline-variant px-3 py-2 outline-none focus:border-primary">
+                <option value="All">All Categories</option>
+                {sortedCategories.map(([cat]) => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-xs font-semibold text-on-surface">Max Distance</label>
+              <select value={filterDistance === null ? "Any" : filterDistance.toString()} onChange={e => setFilterDistance(e.target.value === "Any" ? null : Number(e.target.value))} className="w-full text-sm bg-surface rounded-lg border border-outline-variant px-3 py-2 outline-none focus:border-primary">
+                <option value="Any">Any Distance</option>
+                <option value="1">Within 1 km</option>
+                <option value="2">Within 2 km</option>
+                <option value="5">Within 5 km</option>
+                <option value="10">Within 10 km</option>
+              </select>
+              {filterDistance !== null && !userLoc && <span className="text-[10px] text-error">Location access required for distance filter</span>}
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-xs font-semibold text-on-surface">Max Price</label>
+              <select value={filterPrice === null ? "Any" : filterPrice.toString()} onChange={e => setFilterPrice(e.target.value === "Any" ? null : Number(e.target.value))} className="w-full text-sm bg-surface rounded-lg border border-outline-variant px-3 py-2 outline-none focus:border-primary">
+                <option value="Any">Any Price</option>
+                <option value="5000">Up to ₦5,000</option>
+                <option value="10000">Up to ₦10,000</option>
+                <option value="20000">Up to ₦20,000</option>
+                <option value="50000">Up to ₦50,000</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Map View */}
         <section className="flex flex-col gap-4">
@@ -506,6 +596,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
             onSelectService={openOD} 
             locked={!profileCompleted} 
             heightClass={isMapExpanded ? "h-[600px]" : "h-[300px]"}
+            userLoc={userLoc}
           />
         </section>
 

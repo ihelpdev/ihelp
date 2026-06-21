@@ -23,6 +23,7 @@ interface ServiceMapProps {
   onSelectService: (id: string) => void;
   locked?: boolean;
   heightClass?: string;
+  userLoc?: { lat: number; lng: number } | null;
 }
 
 // Helper to recenter the map when user location is found
@@ -34,21 +35,11 @@ function RecenterMap({ center, zoom }: { center: { lat: number; lng: number }; z
   return null;
 }
 
-export default function ServiceMap({ services, onSelectService, locked, heightClass = "h-[600px]" }: ServiceMapProps) {
+export default function ServiceMap({ services, onSelectService, locked, heightClass = "h-[600px]", userLoc }: ServiceMapProps) {
   const [mounted, setMounted] = useState(false);
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        },
-        (err) => console.warn("Geolocation failed or denied", err),
-        { timeout: 10000 }
-      );
-    }
   }, []);
 
   if (!mounted) return <div className={`${heightClass} w-full bg-surface-container rounded-xl animate-pulse`} />;
