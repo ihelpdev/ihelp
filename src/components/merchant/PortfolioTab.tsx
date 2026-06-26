@@ -4,6 +4,7 @@ import { RootState } from "@/lib/store";
 import { MerchantListing, blankListing, addListing, updateListing, removeListing, UNIT_LABELS } from "@/lib/features/portfolio/portfolioSlice";
 import { Briefcase, Plus, Edit2, Trash2, MapPin, Wrench, Award, CheckCircle2, X } from "lucide-react";
 import dynamic from "next/dynamic";
+import ImageWithFallback from "@/components/ui/ImageWithFallback";
 
 const LocationPickerMap = dynamic(() => import("./LocationPickerMap"), { ssr: false, loading: () => <div className="h-[300px] bg-surface-container animate-pulse rounded-xl" /> });
 
@@ -280,8 +281,7 @@ export default function PortfolioTab() {
             <label className="text-sm font-semibold text-on-surface">Main Cover Image</label>
             {formData.coverImageUrl ? (
               <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-outline-variant group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={formData.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+                <ImageWithFallback src={formData.coverImageUrl} category={formData.category} alt="Cover" className="w-full h-full object-cover" />
                 <button 
                   type="button"
                   onClick={() => setFormData({ ...formData, coverImageUrl: null })}
@@ -341,8 +341,7 @@ export default function PortfolioTab() {
                   <div className="flex flex-wrap gap-3">
                     {formData.details?.portfolioImageUrls.map((url, i) => (
                       <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-outline-variant group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="Portfolio" className="w-full h-full object-cover" />
+                        <ImageWithFallback src={url} category={formData.category} alt="Portfolio" className="w-full h-full object-cover" />
                         <button 
                           type="button"
                           onClick={() => setFormData({ ...formData, details: { ...formData.details!, portfolioImageUrls: formData.details!.portfolioImageUrls.filter((_, idx) => idx !== i) }})}
@@ -412,8 +411,7 @@ export default function PortfolioTab() {
             <div key={l.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
               {l.coverImageUrl && (
                 <div className="h-40 w-full overflow-hidden bg-surface-container relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={l.coverImageUrl} alt="" className="h-full w-full object-cover" />
+                  <ImageWithFallback src={l.coverImageUrl} category={l.category} alt="" className="h-full w-full object-cover" />
                 </div>
               )}
               

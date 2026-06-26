@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 import { X } from "lucide-react";
+import L from "leaflet";
+import MapSearchBar from "@/components/ui/MapSearchBar";
 
 export type LocationPoint = {
   lat: number;
@@ -40,6 +42,7 @@ function ClickableMap({ onAddLocation }: { onAddLocation: (loc: LocationPoint) =
 export default function LocationPickerMap({ locations, onChange }: LocationPickerProps) {
   const [mounted, setMounted] = useState(false);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -79,7 +82,13 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
   return (
     <div className="flex flex-col gap-4">
       <div className="h-[300px] w-full rounded-xl overflow-hidden border border-outline-variant relative z-0">
-        <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
+        <MapContainer 
+          center={center} 
+          zoom={zoom} 
+          scrollWheelZoom={false} 
+          style={{ height: "100%", width: "100%" }}
+          ref={mapRef}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -101,8 +110,19 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
             </Marker>
           ))}
         </MapContainer>
-        <div className="absolute top-2 right-2 bg-surface p-2 rounded-lg shadow text-xs font-semibold z-[400] text-on-surface pointer-events-none">
+        <div className="absolute bottom-4 right-4 bg-surface p-2 rounded-lg shadow text-xs font-semibold z-[400] text-on-surface pointer-events-none">
           Click map to add location
+        </div>
+
+        {/* Map Search Bar */}
+        <div className="absolute top-4 right-4 left-16 z-[1000] max-w-[320px] ml-auto">
+          <MapSearchBar 
+            onLocationSelect={(lat, lng) => {
+              if (mapRef.current) {
+                mapRef.current.flyTo({ lat, lng }, 15, { duration: 1.5 });
+              }
+            }}
+          />
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { RootState } from "@/lib/store";
 import dynamic from "next/dynamic";
+import ImageWithFallback from "@/components/ui/ImageWithFallback";
 
 const ServiceMap = dynamic(() => import("./ServiceMap"), { ssr: false, loading: () => <div className="h-[600px] w-full bg-surface-container rounded-xl animate-pulse" /> });
 
@@ -282,9 +283,10 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
               {odSvc.images && odSvc.images.length > 0 && (
                 <div className="flex gap-3 overflow-x-auto pb-2 snap-x scrollbar-hide">
                   {odSvc.images.map((img: string, idx: number) => (
-                    <img 
+                    <ImageWithFallback 
                       key={idx} 
                       src={img} 
+                      category={odSvc.category}
                       alt={`Preview ${idx + 1}`} 
                       onClick={() => setExpandedImage(img)}
                       className="w-28 h-28 object-cover rounded-xl shrink-0 snap-center border border-outline-variant shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
@@ -324,8 +326,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
                   {noteImages.map((url, idx) => (
                     <div key={idx} style={{ position: "relative", width: 60, height: 60, borderRadius: 8, overflow: "hidden", border: "1px solid #e5e7eb", flexShrink: 0 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Attachment ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <ImageWithFallback src={url} alt={`Attachment ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       <button
                         type="button"
                         onClick={() => removeNoteImage(idx)}
@@ -389,8 +390,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                         <div style={{ color: "#6b7280", marginBottom: 6, fontSize: 12 }}>Attached photos ({noteImages.length})</div>
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           {noteImages.map((url, i) => (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <ImageWithFallback
                               key={i}
                               src={url}
                               alt={`Attachment ${i + 1}`}
@@ -505,7 +505,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
       <button onClick={() => setExpandedImage(null)} style={{ position: "absolute", top: 24, right: 24, padding: "8px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", cursor: "pointer", color: "#fff" }}>
         <X style={{ width: 24, height: 24 }} />
       </button>
-      <img src={expandedImage} alt="Expanded preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "8px" }} />
+      <ImageWithFallback src={expandedImage} alt="Expanded preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "8px" }} />
     </div>
   ) : null;
 
@@ -826,9 +826,8 @@ function ServiceCard({ title, badge, badgeClass, description, meta, locked, onSe
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:border-primary/50 hover:shadow-md transition-all">
       {coverImageUrl && (
-        <div className="w-full h-32 bg-surface-container overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={coverImageUrl} alt={title} className="w-full h-full object-cover" />
+        <div className="relative h-40 w-full bg-surface-container-low shrink-0">
+          <ImageWithFallback src={coverImageUrl} category={category} alt={title} className="w-full h-full object-cover" />
         </div>
       )}
       <div className="p-5 flex flex-col gap-3 flex-1">

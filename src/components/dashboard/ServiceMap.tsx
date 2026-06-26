@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
-import { Star } from "lucide-react";
+import { Star, Crosshair } from "lucide-react";
 import L from "leaflet";
+import MapSearchBar from "@/components/ui/MapSearchBar";
 
 // Define a custom red icon for the user's location
 const userIcon = new L.Icon({
@@ -48,6 +49,7 @@ function RecenterMap({ center, zoom }: { center: { lat: number; lng: number }; z
 
 export default function ServiceMap({ services, onSelectService, locked, heightClass = "h-[600px]", userLoc }: ServiceMapProps) {
   const [mounted, setMounted] = useState(false);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -66,7 +68,13 @@ export default function ServiceMap({ services, onSelectService, locked, heightCl
 
   return (
     <div className={`${heightClass} w-full rounded-xl overflow-hidden border border-outline-variant relative z-0 shadow-sm transition-all duration-300`}>
-      <MapContainer center={center} zoom={zoom} scrollWheelZoom={true} style={{ height: "100%", width: "100%" }}>
+      <MapContainer 
+        center={center} 
+        zoom={zoom} 
+        scrollWheelZoom={true} 
+        style={{ height: "100%", width: "100%" }}
+        ref={mapRef}
+      >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -117,6 +125,40 @@ export default function ServiceMap({ services, onSelectService, locked, heightCl
           ));
         })}
       </MapContainer>
+
+      {/* Map Search Bar */}
+      <div className="absolute top-4 left-4 right-16 z-[1000] max-w-[320px]">
+        <MapSearchBar 
+          onLocationSelect={(lat, lng) => {
+            if (mapRef.current) {
+              mapRef.current.flyTo({ lat, lng }, 14, { duration: 1.5 });
+            }
+          }}
+        />
+      </div>
+
+      {/* Locate Me Button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          const map = mapRef.current;
+          if (map) {
+            if (userLoc) {
+              map.flyTo(userLoc, 15, { duration: 1.5 });
+            } else if ("geolocation" in navigator) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => map.flyTo({ lat: pos.coords.latitude, lng: pos.coords.longitude }, 15, { duration: 1.5 }),
+                (err) => console.warn("Geolocation failed", err),
+                { timeout: 10000 }
+              );
+            }
+          }
+        }}
+        className="absolute bottom-6 right-6 z-[1000] bg-surface text-primary p-2.5 rounded-full shadow-md border border-outline-variant hover:bg-surface-container-lowest transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+        title="Show current location"
+      >
+        <Crosshair className="w-5 h-5" />
+      </button>
     </div>
   );
 }
