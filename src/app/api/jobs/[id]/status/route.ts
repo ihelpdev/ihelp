@@ -39,9 +39,7 @@ export async function PATCH(
 
     // Determine escrow status updates based on job status
     let newEscrowStatus = job.escrowStatus;
-    if (status === JobStatus.COMPLETED) {
-      newEscrowStatus = EscrowStatus.RELEASED;
-    }
+    // Escrow is released by customer confirmation API, not here
 
     const updateData: any = {
       status: status as JobStatus,
@@ -59,6 +57,33 @@ export async function PATCH(
       where: { id },
       data: updateData,
     });
+
+    // Create Notification
+    let notifTitle = "";
+    let notifMsg = "";
+    if (status === JobStatus.ACCEPTED) {
+       notifTitle = "Request Accepted";
+       notifMsg = `A merchant has accepted your request.`;
+    } else if (status === JobStatus.EN_ROUTE) {
+       notifTitle = "Merchant En Route";
+       notifMsg = `Your merchant is on their way!`;
+    } else if (status === JobStatus.COMPLETED) {
+       notifTitle = "Job Completed";
+       notifMsg = `The merchant has marked the job as completed. Please confirm to release payment.`;
+    } else if (status === JobStatus.REJECTED) {
+       notifTitle = "Request Cancelled";
+       notifMsg = `Your request was cancelled.`;
+    }
+
+    if (notifTitle) {
+      await prisma.notification.create({
+        data: {
+          userId: job.customerId,
+          title: notifTitle,
+          message: notifMsg,
+        }
+      }).catch(err => console.error("Error creating notification:", err));
+    }
 
     return NextResponse.json({ 
       success: true, 

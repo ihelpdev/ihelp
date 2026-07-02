@@ -4,6 +4,7 @@ import CustomerNav from "@/components/layout/CustomerNav";
 import CustomerDataLoader from "@/components/layout/CustomerDataLoader";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
 import AuthGuard from "@/components/layout/AuthGuard";
+import NotificationsDropdown from "@/components/layout/NotificationsDropdown";
 
 export default function CustomerLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +13,10 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
       <AuthGuard>
         <header className="sticky top-0 z-50 w-full bg-surface-container-low/80 backdrop-blur-md px-6 py-4 flex justify-between items-center">
           <h1 className="text-primary font-bold text-headline-sm">i-help</h1>
-          <MobileUserMenu />
+          <div className="flex items-center gap-4">
+            <NotificationsDropdown />
+            <MobileUserMenu />
+          </div>
         </header>
         <main className="p-6 md:p-8 w-full max-w-7xl mx-auto pb-24 md:pb-8 flex flex-col">
           <CustomerNav />

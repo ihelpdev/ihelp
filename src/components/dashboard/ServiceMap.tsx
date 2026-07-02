@@ -127,7 +127,7 @@ export default function ServiceMap({ services, onSelectService, locked, heightCl
       </MapContainer>
 
       {/* Map Search Bar */}
-      <div className="absolute top-4 left-4 right-16 z-[1000] max-w-[320px]">
+      <div className="absolute top-4 right-4 z-[1000] max-w-[320px] w-full ml-auto">
         <MapSearchBar 
           onLocationSelect={(lat, lng) => {
             if (mapRef.current) {

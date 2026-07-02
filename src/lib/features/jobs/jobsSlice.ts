@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type JobStatus   = 'pending' | 'accepted' | 'completed' | 'rejected'
+export type JobStatus   = 'pending' | 'accepted' | 'en_route' | 'in_progress' | 'completed' | 'confirmed' | 'rejected' | 'disputed'
 export type EscrowStatus = 'locked' | 'released'
 export type JobType     = 'on_demand' | 'subscription'
 
@@ -51,8 +51,9 @@ const jobsSlice = createSlice({
       const job = state.jobs.find(j => j.id === action.payload)
       if (job) job.rated = true
     },
+    resetJobs: () => initialState,
   },
 })
 
-export const { setJobs, addJob, updateJobStatus, releaseJobEscrow, markJobRated } = jobsSlice.actions
+export const { setJobs, addJob, updateJobStatus, releaseJobEscrow, markJobRated, resetJobs } = jobsSlice.actions
 export default jobsSlice.reducer

@@ -4,14 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useDispatch } from "react-redux";
-import { setProfileCompleted, setUser } from "@/lib/features/auth/authSlice";
+import { logout } from "@/lib/features/auth/authSlice";
+import { resetJobs } from "@/lib/features/jobs/jobsSlice";
+import { resetPortfolio } from "@/lib/features/portfolio/portfolioSlice";
+import { Loader2, CheckCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
@@ -19,11 +20,14 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setErrorMsg(null);
     setIsLoading(true);
+
+    const supabase = createClient();
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: formData.email,
@@ -36,70 +40,95 @@ export default function LoginPage() {
       return;
     }
 
+    // Reset all Redux state so DataLoaders start fresh
+    dispatch(resetJobs());
+    dispatch(resetPortfolio());
+    dispatch(logout()); // also resets isInitialized → false, so DataLoaders re-run
+
     // Determine where to route based on metadata role
     const role = data.user?.user_metadata?.role;
 
-    // Fetch profile completion status
-    try {
-      const res = await fetch('/api/profile/check');
-      if (res.ok) {
-        const profileData = await res.json();
-        if (profileData.success) {
-          dispatch(setProfileCompleted(profileData.profileCompleted));
-          dispatch(setUser({
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.name || 'User',
-            role: profileData.role
-          }));
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile status on login", err);
-    }
+    setIsSuccess(true);
 
-    if (role === "MERCHANT") {
-      router.push("/merchant/dashboard");
-    } else {
-      router.push("/customer/dashboard");
-    }
+    // Short delay to let the success state render before navigating
+    setTimeout(() => {
+      if (role === "MERCHANT") {
+        router.replace("/merchant/dashboard");
+      } else {
+        router.replace("/customer/dashboard");
+      }
+    }, 400);
   };
 
   return (
     <div className="w-full transition-all duration-500">
       <h2 className="text-headline-sm font-bold text-on-surface mb-2">Welcome back</h2>
       <p className="text-body-md text-on-surface-variant mb-6">Log in to your i-help account.</p>
-      
-      {errorMsg && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{errorMsg}</div>}
+
+      {errorMsg && (
+        <div className="mb-4 p-3 bg-error/10 text-error border border-error/20 rounded-lg text-sm flex items-start gap-2 animate-in fade-in duration-200">
+          <span className="mt-0.5 shrink-0">⚠️</span>
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {isSuccess && (
+        <div className="mb-4 p-3 bg-green-500/10 text-green-700 border border-green-500/20 rounded-lg text-sm flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          <span>Login successful! Redirecting…</span>
+        </div>
+      )}
 
       <div className="space-y-5">
-        <Input 
-          label="Email Address" 
-          type="email" 
+        <Input
+          label="Email Address"
+          type="email"
           placeholder="name@example.com"
           value={formData.email}
-          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          disabled={isLoading || isSuccess}
         />
-        <Input 
-          label="Password" 
-          type="password" 
+        <Input
+          label="Password"
+          type="password"
           placeholder="Enter your password"
           value={formData.password}
-          onChange={(e) => setFormData({...formData, password: e.target.value})}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          disabled={isLoading || isSuccess}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && formData.email && formData.password && !isLoading) {
+              handleLogin();
+            }
+          }}
         />
       </div>
 
-      <Button 
-        className="w-full mt-8 py-3 text-base" 
-        disabled={!formData.email || !formData.password || isLoading}
+      <Button
+        className="w-full mt-8 py-3 text-base relative"
+        disabled={!formData.email || !formData.password || isLoading || isSuccess}
         onClick={handleLogin}
       >
-        {isLoading ? "Logging in..." : "Log In"}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Logging in…
+          </span>
+        ) : isSuccess ? (
+          <span className="flex items-center justify-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Redirecting…
+          </span>
+        ) : (
+          "Log In"
+        )}
       </Button>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-on-surface-variant">
-          Don't have an account? <a href="/register" className="text-primary font-medium hover:underline">Sign up</a>
+          Don&apos;t have an account?{" "}
+          <a href="/register" className="text-primary font-medium hover:underline">
+            Sign up
+          </a>
         </p>
       </div>
     </div>

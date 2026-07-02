@@ -12,10 +12,17 @@ export default function MerchantDataLoader() {
   const dispatch = useDispatch();
   const router = useRouter();
   const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
+  const isLoggingOut = useSelector((state: RootState) => state.auth.isLoggingOut);
   const loadingStarted = useRef(false);
 
   useEffect(() => {
-    if (isInitialized || loadingStarted.current) return;
+    // Reset the ref whenever isInitialized goes back to false (e.g., after logout)
+    if (!isInitialized) {
+      loadingStarted.current = false;
+    }
+
+    // Don't run if already initialized, already loading, or in the middle of logout
+    if (isInitialized || loadingStarted.current || isLoggingOut) return;
     loadingStarted.current = true;
 
     const loadData = async () => {
@@ -65,7 +72,7 @@ export default function MerchantDataLoader() {
 
     loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInitialized, router, dispatch]);
+  }, [isInitialized, isLoggingOut]);
 
   return null;
 }

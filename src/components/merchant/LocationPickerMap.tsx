@@ -115,7 +115,7 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
         </div>
 
         {/* Map Search Bar */}
-        <div className="absolute top-4 right-4 left-16 z-[1000] max-w-[320px] ml-auto">
+        <div className="absolute top-4 right-4 z-[1000] max-w-[320px] w-full ml-auto">
           <MapSearchBar 
             onLocationSelect={(lat, lng) => {
               if (mapRef.current) {

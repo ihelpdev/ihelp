@@ -26,6 +26,7 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
   isInitialized: boolean;
+  isLoggingOut: boolean;
 }
 
 const initialState: AuthState = {
@@ -36,6 +37,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isInitialized: false,
+  isLoggingOut: false,
 };
 
 const authSlice = createSlice({
@@ -56,6 +58,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.profileCompleted = false;
       state.showProfileModal = false;
+      state.isInitialized = false;
     },
     setProfileCompleted: (state, action: PayloadAction<boolean>) => {
       state.profileCompleted = action.payload;
@@ -66,8 +69,12 @@ const authSlice = createSlice({
     setInitialized: (state, action: PayloadAction<boolean>) => {
       state.isInitialized = action.payload;
     },
+    setLoggingOut: (state, action: PayloadAction<boolean>) => {
+      state.isLoggingOut = action.payload;
+    },
+    resetAll: () => initialState,
   },
 })
 
-export const { setUser, setFullUser, logout, setProfileCompleted, setShowProfileModal, setInitialized } = authSlice.actions
+export const { setUser, setFullUser, logout, setProfileCompleted, setShowProfileModal, setInitialized, setLoggingOut, resetAll } = authSlice.actions
 export default authSlice.reducer

@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
-import { Job, markJobRated } from "@/lib/features/jobs/jobsSlice";
+import { Job, markJobRated, updateJobStatus, releaseJobEscrow } from "@/lib/features/jobs/jobsSlice";
 import { Briefcase, Clock, CheckCircle2, AlertCircle, XCircle, Star } from "lucide-react";
 
 const STATUS: Record<Job["status"], { label: string; cls: string; icon: React.ReactNode }> = {
   pending:   { label: "Pending",   cls: "bg-amber-100 text-amber-800",     icon: <AlertCircle  className="w-3.5 h-3.5" /> },
   accepted:  { label: "Accepted",  cls: "bg-blue-100 text-blue-800",       icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+  en_route:  { label: "En Route",  cls: "bg-indigo-100 text-indigo-800",   icon: <Briefcase    className="w-3.5 h-3.5" /> },
+  in_progress: { label: "In Progress", cls: "bg-cyan-100 text-cyan-800", icon: <Clock className="w-3.5 h-3.5" /> },
   completed: { label: "Completed", cls: "bg-emerald-100 text-emerald-800", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+  confirmed: { label: "Confirmed", cls: "bg-emerald-100 text-emerald-800", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
   rejected:  { label: "Rejected",  cls: "bg-red-100 text-red-800",         icon: <XCircle      className="w-3.5 h-3.5" /> },
+  disputed:  { label: "Disputed",  cls: "bg-orange-100 text-orange-800",   icon: <AlertCircle  className="w-3.5 h-3.5" /> },
 };
 
 function StarRatingWidget({ jobId, serviceId, onDone }: { jobId: string; serviceId: string; onDone: () => void }) {
@@ -99,7 +103,9 @@ function StarRatingWidget({ jobId, serviceId, onDone }: { jobId: string; service
 
 export default function RequestTab() {
   const { jobs } = useSelector((s: RootState) => s.jobs);
+  const dispatch = useDispatch();
   const [ratingJobId, setRatingJobId] = useState<string | null>(null);
+  const [confirmingJobId, setConfirmingJobId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -118,8 +124,9 @@ export default function RequestTab() {
           {jobs.map((b) => {
             const st = STATUS[b.status];
             const isCompleted  = b.status === "completed";
-            const isOnDemand   = b.type === "on_demand";
-            const canRate      = isCompleted && isOnDemand && !b.rated;
+            const isConfirmed  = b.status === "confirmed";
+            const isOnDemand   = b.type === "on_demand" || b.type === "special_request" as any;
+            const canRate      = isConfirmed && isOnDemand && !b.rated;
             const isRatingOpen = ratingJobId === b.id;
 
             return (
@@ -154,6 +161,30 @@ export default function RequestTab() {
                       <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
                         <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" /> Rated
                       </span>
+                    )}
+                    {b.status === "completed" && (
+                      <button
+                        disabled={confirmingJobId === b.id}
+                        onClick={async () => {
+                          setConfirmingJobId(b.id);
+                          try {
+                            const res = await fetch("/api/jobs/confirm", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ jobId: b.id })
+                            });
+                            if (res.ok) {
+                              dispatch(updateJobStatus({ id: b.id, status: "confirmed" }));
+                              dispatch(releaseJobEscrow(b.id));
+                            }
+                          } finally {
+                            setConfirmingJobId(null);
+                          }
+                        }}
+                        className="px-3 py-1 text-xs font-semibold bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition disabled:opacity-50"
+                      >
+                        {confirmingJobId === b.id ? "Confirming..." : "Confirm Completion"}
+                      </button>
                     )}
                     {canRate && !isRatingOpen && (
                       <button

@@ -87,8 +87,9 @@ const portfolioSlice = createSlice({
     removeListing(state, action: PayloadAction<string>) {
       state.listings = state.listings.filter(l => l.id !== action.payload)
     },
+    resetPortfolio: () => initialState,
   },
 })
 
-export const { setListings, addListing, updateListing, removeListing } = portfolioSlice.actions
+export const { setListings, addListing, updateListing, removeListing, resetPortfolio } = portfolioSlice.actions
 export default portfolioSlice.reducer

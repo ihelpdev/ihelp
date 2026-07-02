@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         id: id, // Syncing the UUID from Supabase to Prisma
         email: email,
         name: name || 'User',
-        role: role === 'MERCHANT' ? 'MERCHANT' : 'CUSTOMER',
+        role: role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : (role === 'MERCHANT' ? 'MERCHANT' : 'CUSTOMER'),
       },
     });
 

@@ -14,8 +14,8 @@ export function Footer() {
           <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/become-a-merchant">Become a Merchant</Link>
           <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/how-it-works">How it Works</Link>
           <div className="w-px h-4 bg-outline-variant hidden md:block"></div>
-          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Privacy Policy</Link>
-          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="#">Terms of Service</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/privacy-policy">Privacy Policy</Link>
+          <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/terms-and-conditions">Terms of Service</Link>
         </div>
       </div>
     </footer>

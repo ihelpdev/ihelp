@@ -32,7 +32,6 @@ function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number)
   return R * c; // Distance in km
 }
 
-const SUBS        = servicesRaw.subscription_base_services;
 const FREQ_MATRIX = servicesRaw.subscription_frequency_matrix;
 
 type FlowStep = "detail" | "frequency" | "confirm" | "success";
@@ -70,7 +69,15 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
   const [mounted,  setMounted]  = useState(false);
   const [onDemand, setOnDemand] = useState<any[]>([]);
+  const [subs, setSubs]         = useState<any[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
+  
+  // Special Request State
+  const [isSpecialRequestModalOpen, setIsSpecialRequestModalOpen] = useState(false);
+  const [specialRequestDesc, setSpecialRequestDesc] = useState("");
+  const [specialRequestBudget, setSpecialRequestBudget] = useState("");
+  const [specialRequestImages, setSpecialRequestImages] = useState<string[]>([]);
+  const [isUploadingSpecialImages, setIsUploadingSpecialImages] = useState(false);
   
   useEffect(() => { 
     setMounted(true); 
@@ -82,24 +89,30 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
       );
     }
 
-    const fetchOnDemand = async () => {
+    const fetchServices = async () => {
       try {
         setIsLoadingServices(true);
-        const res = await fetch("/api/services/on-demand");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) {
-            console.log("On demand service", data)
-            setOnDemand(data.data);
-          }
+        const [odRes, subRes] = await Promise.all([
+          fetch("/api/services/on-demand"),
+          fetch("/api/services/subscriptions")
+        ]);
+        
+        if (odRes.ok) {
+          const data = await odRes.json();
+          if (data.success) setOnDemand(data.data);
+        }
+        
+        if (subRes.ok) {
+          const data = await subRes.json();
+          if (data.success) setSubs(data.data);
         }
       } catch (err) {
-        console.error("Error fetching on-demand services:", err);
+        console.error("Error fetching services:", err);
       } finally {
         setIsLoadingServices(false);
       }
     };
-    fetchOnDemand();
+    fetchServices();
   }, []);
 
   const filterFn = (s: any) => {
@@ -128,8 +141,9 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   };
 
   const filteredOD  = onDemand.filter(filterFn);
-  const filteredSub = SUBS.filter(filterFn);
+  const filteredSub = subs.filter(filterFn);
   const visibleSub  = showAllSub ? filteredSub : filteredSub.slice(0, 2);
+  const latestServices = filteredOD.slice(0, 8);
 
   // Group on-demand services by category, sort by count desc
   const categoryMap: Record<string, any[]> = {};
@@ -150,7 +164,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
     : [];
 
   const odSvc  = modal?.kind === "on_demand"    ? onDemand.find(s => s.id === modal.serviceId) ?? null : null;
-  const subSvc = modal?.kind === "subscription" ? SUBS.find(s => s.id === modal.serviceId) ?? null      : null;
+  const subSvc = modal?.kind === "subscription" ? subs.find(s => s.id === modal.serviceId) ?? null      : null;
   const freqEntry = FREQ_MATRIX.find(f => f.frequency_key === modal?.frequencyKey) ?? null;
 
   const subTotal = subSvc && freqEntry
@@ -253,6 +267,45 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
       goStep("success");
     } catch (error) {
       setToast("Failed to subscribe. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const submitSpecialRequest = async () => {
+    if (!specialRequestDesc.trim()) return setToast("Please provide details for your special request");
+    
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/jobs/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'special_request',
+          serviceName: 'Special Request',
+          amount: Number(specialRequestBudget) || 0,
+          customerNote: specialRequestDesc.trim(),
+          customerNoteImages: specialRequestImages,
+        })
+      });
+      
+      if (!res.ok) throw new Error('Failed to create special request');
+      
+      const data = await res.json();
+      dispatch(addJob(data.data));
+      setIsSpecialRequestModalOpen(false);
+      setSpecialRequestDesc("");
+      setSpecialRequestBudget("");
+      setSpecialRequestImages([]);
+      
+      if (Number(specialRequestBudget) > 0) {
+        dispatch(lockEscrow({ amount: Number(specialRequestBudget), description: `Escrow locked — Special Request` }));
+      }
+      
+      setToast("Special request submitted successfully! Pros will review it soon.");
+      onTabSwitch?.("bookings");
+    } catch (error) {
+      setToast("Failed to submit special request.");
     } finally {
       setIsSubmitting(false);
     }
@@ -497,6 +550,122 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
     </div>
   ) : null;
 
+  const specialRequestModalJSX = isSpecialRequestModalOpen ? (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "16px", backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) setIsSpecialRequestModalOpen(false); }}
+    >
+      <div style={{ backgroundColor: "#ffffff", width: "100%", maxWidth: "480px", borderRadius: "16px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
+          <span style={{ fontWeight: 600, color: "#111827", fontSize: "15px" }}>Make a Special Request</span>
+          <button onClick={() => setIsSpecialRequestModalOpen(false)} style={{ padding: "4px", borderRadius: "50%", border: "none", background: "transparent", cursor: "pointer" }}>
+            <X style={{ width: 20, height: 20, color: "#6b7280" }} />
+          </button>
+        </div>
+        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: 1.6 }}>Describe what you need done in detail. Local pros will see this and can choose to accept the job.</p>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, color: "#374151" }}>What do you need done?</label>
+            <textarea
+              value={specialRequestDesc}
+              onChange={e => setSpecialRequestDesc(e.target.value)}
+              placeholder="e.g. I need a custom wooden bookshelf built..."
+              rows={4}
+              style={{
+                width: "100%", resize: "none", padding: "10px 12px",
+                borderRadius: "10px", border: "1.5px solid #e5e7eb",
+                fontSize: "13px", color: "#111827", outline: "none",
+                fontFamily: "inherit", lineHeight: 1.5, boxSizing: "border-box",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#002d62")}
+              onBlur={e  => (e.target.style.borderColor = "#e5e7eb")}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, color: "#374151" }}>Your Budget (NGN) <span style={{ fontWeight: 400, color: "#9ca3af" }}>(optional)</span></label>
+            <input
+              type="number"
+              value={specialRequestBudget}
+              onChange={e => setSpecialRequestBudget(e.target.value)}
+              placeholder="e.g. 5000"
+              style={{
+                width: "100%", padding: "10px 12px",
+                borderRadius: "10px", border: "1.5px solid #e5e7eb",
+                fontSize: "13px", color: "#111827", outline: "none",
+                boxSizing: "border-box",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#002d62")}
+              onBlur={e  => (e.target.style.borderColor = "#e5e7eb")}
+            />
+          </div>
+
+          {/* Special Request Images */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+            {specialRequestImages.map((url, idx) => (
+              <div key={idx} style={{ position: "relative", width: 60, height: 60, borderRadius: 8, overflow: "hidden", border: "1px solid #e5e7eb", flexShrink: 0 }}>
+                <ImageWithFallback src={url} alt={`Attachment ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <button
+                  type="button"
+                  onClick={() => setSpecialRequestImages(prev => prev.filter((_, i) => i !== idx))}
+                  style={{
+                    position: "absolute", top: 2, right: 2,
+                    background: "rgba(0,0,0,0.55)", border: "none", borderRadius: "50%",
+                    width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", padding: 0,
+                  }}
+                >
+                  <X style={{ width: 10, height: 10, color: "#fff" }} />
+                </button>
+              </div>
+            ))}
+            <label style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 12px", borderRadius: 8,
+              border: "1.5px dashed #d1d5db", cursor: isUploadingSpecialImages ? "not-allowed" : "pointer",
+              fontSize: 12, fontWeight: 500, color: "#6b7280",
+              background: "#f9fafb", flexShrink: 0, opacity: isUploadingSpecialImages ? 0.6 : 1,
+            }}>
+              <ImagePlus style={{ width: 14, height: 14 }} />
+              {isUploadingSpecialImages ? "Uploading…" : "Add photos"}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={isUploadingSpecialImages}
+                onChange={async (e) => {
+                  if (!e.target.files || e.target.files.length === 0) return;
+                  setIsUploadingSpecialImages(true);
+                  try {
+                    const uploaded: string[] = [];
+                    for (let i = 0; i < e.target.files.length; i++) {
+                      const fd = new FormData();
+                      fd.append('file', e.target.files[i]);
+                      fd.append('upload_preset', 'ihelp-images');
+                      const res = await fetch('https://api.cloudinary.com/v1_1/dik1cosdn/image/upload', { method: 'POST', body: fd });
+                      const data = await res.json();
+                      if (data.secure_url) uploaded.push(data.secure_url);
+                    }
+                    setSpecialRequestImages(prev => [...prev, ...uploaded]);
+                  } catch {
+                    setToast('Image upload failed.');
+                  } finally {
+                    setIsUploadingSpecialImages(false);
+                    e.target.value = '';
+                  }
+                }}
+              />
+            </label>
+          </div>
+
+          <ModalBtn label={isSubmitting ? "Submitting..." : "Submit Request"} onClick={submitSpecialRequest} disabled={isSubmitting || !specialRequestDesc.trim()} />
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   const imageViewerJSX = expandedImage ? (
     <div
       style={{ position: "fixed", inset: 0, zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", backgroundColor: "rgba(0,0,0,0.85)" }}
@@ -601,6 +770,34 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           />
         </section>
 
+        {/* Latest Services */}
+        {!isLoadingServices && latestServices.length > 0 && !selectedCategory && (
+          <section className="flex flex-col gap-4">
+            <h3 className="font-semibold text-on-surface flex items-center gap-2 text-sm">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Latest Services
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {latestServices.map((svc: any) => (
+                <ServiceCard
+                  key={svc.id}
+                  title={svc.name}
+                  badge="Pro"
+                  badgeClass="bg-primary-container text-on-primary-container"
+                  description={svc.description}
+                  meta={`NGN ${svc.suggested_base_rate_ngn?.toLocaleString()} / ${svc.unit === "hour" ? "hr" : svc.unit}`}
+                  locked={!profileCompleted}
+                  onSelect={() => openOD(svc.id)}
+                  coverImageUrl={svc.coverImageUrl}
+                  tags={svc.tags}
+                  category={svc.category}
+                  ratingAvg={svc.ratingAvg}
+                  ratingCount={svc.ratingCount}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Browse Categories */}
         <section>
           {isLoadingServices ? (
@@ -701,6 +898,20 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           )}
         </section>
 
+        {/* Special Request */}
+        <section className="bg-surface-container-low border border-outline-variant rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-lg font-bold text-on-surface">Don't find what you are looking for?</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Make a special request and let our pros come to you with offers.</p>
+          </div>
+          <button 
+            onClick={() => setIsSpecialRequestModalOpen(true)}
+            className="whitespace-nowrap px-6 py-3 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-opacity"
+          >
+            Make Special Request
+          </button>
+        </section>
+
         {/* Subscriptions */}
         <section>
           <h3 className="font-semibold text-on-surface mb-3 flex items-center gap-2 text-sm">
@@ -728,6 +939,7 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
 
       {/* Portal — renders directly into document.body, escaping ALL parent stacking contexts */}
       {mounted && modalJSX && createPortal(modalJSX, document.body)}
+      {mounted && specialRequestModalJSX && createPortal(specialRequestModalJSX, document.body)}
       {mounted && imageViewerJSX && createPortal(imageViewerJSX, document.body)}
     </>
   );
