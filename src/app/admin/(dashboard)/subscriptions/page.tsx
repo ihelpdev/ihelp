@@ -144,7 +144,7 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-on-surface-variant animate-pulse">Loading subscriptions...</div>;
+  if (loading) return <div className="p-8 text-center text-on-surface-variant animate-pulse">Loading subscriptions..</div>;
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 max-w-5xl mx-auto relative h-full pb-20 px-4 md:px-0">
