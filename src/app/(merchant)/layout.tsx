@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import MobileUserMenu from "@/components/layout/MobileUserMenu";
-import MerchantNav from "@/components/layout/MerchantNav";
+import { MerchantDesktopNav, MerchantMobileNav } from "@/components/layout/MerchantNav";
 import MerchantDataLoader from "@/components/layout/MerchantDataLoader";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
 import AuthGuard from "@/components/layout/AuthGuard";
@@ -14,7 +14,7 @@ export default function MerchantLayout({ children }: { children: ReactNode }) {
       <AuthGuard>
         <header className="sticky top-0 z-50 w-full bg-surface-container-low/80 backdrop-blur-md px-4 md:px-6 py-4 flex items-center border-b border-outline-variant">
           
-          <MerchantNav />
+          <MerchantDesktopNav />
 
           <h1 className="text-primary font-bold text-headline-sm flex-shrink-0 ml-2 md:ml-0 md:mr-4 lg:mr-8 md:order-first flex items-center gap-2">
             <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
@@ -34,6 +34,7 @@ export default function MerchantLayout({ children }: { children: ReactNode }) {
         </main>
         <OnboardingModal />
       </AuthGuard>
+      <MerchantMobileNav />
     </div>
   );
 }
