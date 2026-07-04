@@ -198,9 +198,26 @@ export default function JobsTab() {
               <div>
                 <div className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Customer Note</div>
                 <div className="text-sm text-on-surface p-3 bg-surface-container-lowest border border-outline-variant rounded-xl italic">
-                  "{selectedJob.customerNote || "No additional details provided."}"
+                  &ldquo;{selectedJob.customerNote || "No additional details provided."}&rdquo;
                 </div>
               </div>
+
+              {selectedJob.customerNoteImages && selectedJob.customerNoteImages.length > 0 && (
+                <div>
+                  <div className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Attached Images</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedJob.customerNoteImages.map((url: string, i: number) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={url}
+                          alt={`Customer image ${i + 1}`}
+                          className="w-full h-28 object-cover rounded-lg border border-outline-variant hover:opacity-80 transition-opacity"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <div className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Location</div>

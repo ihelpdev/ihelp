@@ -5,15 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createClient } from "@/utils/supabase/client";
-import { useDispatch } from "react-redux";
-import { logout } from "@/lib/features/auth/authSlice";
-import { resetJobs } from "@/lib/features/jobs/jobsSlice";
-import { resetPortfolio } from "@/lib/features/portfolio/portfolioSlice";
 import { Loader2, CheckCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -40,26 +35,18 @@ export default function LoginPage() {
       return;
     }
 
-    // Reset all Redux state so DataLoaders start fresh
-    dispatch(resetJobs());
-    dispatch(resetPortfolio());
-    dispatch(logout()); // also resets isInitialized → false, so DataLoaders re-run
-
     // Determine where to route based on metadata role
     const role = data.user?.user_metadata?.role;
 
     setIsSuccess(true);
 
-    // Short delay to let the success state render before navigating
-    setTimeout(() => {
-      if (role === "MERCHANT") {
-        router.replace("/merchant/dashboard");
-      } else if (role === "SUPER_ADMIN" || role === "ADMIN") {
-        router.replace("/admin/dashboard");
-      } else {
-        router.replace("/customer/dashboard");
-      }
-    }, 400);
+    if (role === "MERCHANT") {
+      router.replace("/merchant/dashboard");
+    } else if (role === "SUPER_ADMIN" || role === "ADMIN") {
+      router.replace("/admin/dashboard");
+    } else {
+      router.replace("/customer/dashboard");
+    }
   };
 
   return (

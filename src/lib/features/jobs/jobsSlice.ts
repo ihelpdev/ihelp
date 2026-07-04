@@ -5,20 +5,22 @@ export type EscrowStatus = 'locked' | 'released'
 export type JobType     = 'on_demand' | 'subscription'
 
 export interface Job {
-  id:           string
-  customerId:   string
-  merchantId:   string | null
-  serviceId:    string
-  serviceName:  string
-  type:         JobType
-  status:       JobStatus
-  escrowStatus: EscrowStatus
-  amount:       number
-  frequency?:   string
-  date:         string
-  rated?:       boolean   // true once the customer has submitted a rating
-  customerPhone?: string
-  merchantPhone?: string
+  id:                  string
+  customerId:          string
+  merchantId:          string | null
+  serviceId:           string
+  serviceName:         string
+  type:                JobType
+  status:              JobStatus
+  escrowStatus:        EscrowStatus
+  amount:              number
+  frequency?:          string
+  date:                string
+  rated?:              boolean   // true once the customer has submitted a rating
+  customerPhone?:      string
+  merchantPhone?:      string
+  customerNote?:       string | null
+  customerNoteImages?: string[]
 }
 
 interface JobsState {

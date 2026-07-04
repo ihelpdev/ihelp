@@ -41,19 +41,21 @@ export async function GET(req: Request) {
     });
 
     const formattedJobs = jobs.map(job => ({
-      id:           job.id,
-      customerId:   job.customerId,
-      merchantId:   job.merchantId,
-      serviceId:    job.serviceId ?? '',
-      serviceName:  job.description ?? '',
-      type:         job.serviceType as 'on_demand' | 'subscription',
-      status:       job.status.toLowerCase(),
-      escrowStatus: job.escrowStatus.toLowerCase(),
-      amount:       job.amount,
-      frequency:    job.frequency,
-      date:         job.createdAt.toISOString().slice(0, 10),
-      customerPhone: job.customer?.profile?.phone,
-      merchantPhone: job.merchant?.profile?.phone,
+      id:                  job.id,
+      customerId:          job.customerId,
+      merchantId:          job.merchantId,
+      serviceId:           job.serviceId ?? '',
+      serviceName:         job.description ?? '',
+      type:                job.serviceType as 'on_demand' | 'subscription',
+      status:              job.status.toLowerCase(),
+      escrowStatus:        job.escrowStatus.toLowerCase(),
+      amount:              job.amount,
+      frequency:           job.frequency,
+      date:                job.createdAt.toISOString().slice(0, 10),
+      customerPhone:       job.customer?.profile?.phone,
+      merchantPhone:       job.merchant?.profile?.phone,
+      customerNote:        job.customerNote ?? null,
+      customerNoteImages:  job.customerNoteImages ?? [],
     }));
 
     return NextResponse.json({ success: true, data: formattedJobs });
