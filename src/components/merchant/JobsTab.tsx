@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { updateJobStatus, releaseJobEscrow } from "@/lib/features/jobs/jobsSlice";
-import { Briefcase, CheckCircle2, AlertCircle, XCircle, Clock, MapIcon, Navigation } from "lucide-react";
+import { Briefcase, CheckCircle2, AlertCircle, XCircle, Clock, MapIcon, Navigation, Phone } from "lucide-react";
 import InAppRoutingMap from "./InAppRoutingMap";
 
 export default function JobsTab() {
@@ -130,6 +130,12 @@ export default function JobsTab() {
                       <span>·</span>
                       <span>{job.date}</span>
                     </p>
+                    {job.status !== 'pending' && job.status !== 'rejected' && job.customerPhone && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold">
+                        <Phone className="w-3.5 h-3.5" />
+                        <a href={`tel:${job.customerPhone}`} className="hover:underline">{job.customerPhone}</a>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
@@ -175,7 +181,7 @@ export default function JobsTab() {
       {/* Details Modal */}
       {isDetailsModalOpen && selectedJob && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4 bg-black/60" onClick={(e) => { if (e.target === e.currentTarget) setIsDetailsModalOpen(false); }}>
-          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="bg-white w-full rounded-2xl overflow-hidden shadow-2xl flex flex-col">
             <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
               <h3 className="font-bold text-lg text-on-surface">Request Details</h3>
               <button onClick={() => setIsDetailsModalOpen(false)} className="p-1 rounded-full hover:bg-surface-container text-on-surface-variant">
@@ -202,6 +208,16 @@ export default function JobsTab() {
                   <MapIcon className="w-4 h-4 text-primary" /> Abuja, Nigeria (Est. 12 mins away)
                 </div>
               </div>
+
+              {selectedJob.status !== 'pending' && selectedJob.status !== 'rejected' && selectedJob.customerPhone && (
+                <div>
+                  <div className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Customer Contact</div>
+                  <div className="text-sm font-medium text-on-surface flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <a href={`tel:${selectedJob.customerPhone}`} className="hover:underline text-primary">{selectedJob.customerPhone}</a>
+                  </div>
+                </div>
+              )}
               
             </div>
             

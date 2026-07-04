@@ -17,6 +17,8 @@ export interface Job {
   frequency?:   string
   date:         string
   rated?:       boolean   // true once the customer has submitted a rating
+  customerPhone?: string
+  merchantPhone?: string
 }
 
 interface JobsState {

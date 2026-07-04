@@ -33,6 +33,10 @@ export async function GET(req: Request) {
 
     const jobs = await prisma.job.findMany({
       where: whereClause,
+      include: {
+        customer: { include: { profile: true } },
+        merchant: { include: { profile: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -48,6 +52,8 @@ export async function GET(req: Request) {
       amount:       job.amount,
       frequency:    job.frequency,
       date:         job.createdAt.toISOString().slice(0, 10),
+      customerPhone: job.customer?.profile?.phone,
+      merchantPhone: job.merchant?.profile?.phone,
     }));
 
     return NextResponse.json({ success: true, data: formattedJobs });

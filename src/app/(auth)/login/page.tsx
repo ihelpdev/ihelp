@@ -54,6 +54,8 @@ export default function LoginPage() {
     setTimeout(() => {
       if (role === "MERCHANT") {
         router.replace("/merchant/dashboard");
+      } else if (role === "SUPER_ADMIN" || role === "ADMIN") {
+        router.replace("/admin/dashboard");
       } else {
         router.replace("/customer/dashboard");
       }

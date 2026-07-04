@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { Job, markJobRated, updateJobStatus, releaseJobEscrow } from "@/lib/features/jobs/jobsSlice";
-import { Briefcase, Clock, CheckCircle2, AlertCircle, XCircle, Star } from "lucide-react";
+import { Briefcase, Clock, CheckCircle2, AlertCircle, XCircle, Star, Phone } from "lucide-react";
 
 const STATUS: Record<Job["status"], { label: string; cls: string; icon: React.ReactNode }> = {
   pending:   { label: "Pending",   cls: "bg-amber-100 text-amber-800",     icon: <AlertCircle  className="w-3.5 h-3.5" /> },
@@ -145,6 +145,12 @@ export default function RequestTab() {
                           ? `Subscription · ${(b.frequency ?? "").replace("_", "-").toLowerCase()}`
                           : "On-Demand"} · {b.date}
                       </p>
+                      {b.status !== 'pending' && b.status !== 'rejected' && b.merchantPhone && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold">
+                          <Phone className="w-3.5 h-3.5" />
+                          <a href={`tel:${b.merchantPhone}`} className="hover:underline">{b.merchantPhone}</a>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 sm:ml-auto">

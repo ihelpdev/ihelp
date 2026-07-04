@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Settings, CreditCard, LayoutList, Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -32,12 +33,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
           <span className="font-bold text-lg text-primary tracking-tight">Super Admin</span>
         </Link>
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 text-on-surface hover:bg-surface-container rounded-lg transition-colors"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 text-on-surface hover:bg-surface-container rounded-lg transition-colors"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Backdrop (Mobile) */}
@@ -85,6 +89,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        <div className="p-4 border-t border-outline-variant flex justify-between items-center">
+          <span className="text-on-surface-variant font-medium text-sm">Theme</span>
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Main Content */}

@@ -19,10 +19,10 @@ export default function WalletTab() {
       {/* Balance cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Available */}
-        <div className="bg-primary text-on-primary rounded-2xl p-6 shadow-md flex flex-col justify-between min-h-[180px]">
+        <div className="bg-gradient-to-br from-primary via-[#003d82] to-[#1a4480] text-white rounded-2xl p-6 shadow-md flex flex-col justify-between min-h-[180px]">
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-lg"><Wallet className="w-5 h-5" /></div>
-            <span className="font-semibold">Available Balance</span>
+            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><Wallet className="w-5 h-5 text-white" /></div>
+            <span className="font-semibold text-white">Available Balance</span>
           </div>
           <div className="mt-4">
             <div className="text-xs text-white/70 uppercase tracking-widest mb-1">Deposited Funds</div>

@@ -63,7 +63,7 @@ export default function MobileUserMenu() {
               <p className="text-xs text-on-surface-variant truncate">{user.email}</p>
             </div>
             <Link
-              href={user.role === "MERCHANT" ? "/merchant/dashboard" : "/customer/dashboard"}
+              href={user.role === "MERCHANT" ? "/merchant/dashboard" : (user.role === "SUPER_ADMIN" || user.role === "ADMIN") ? "/admin/dashboard" : "/customer/dashboard"}
               onClick={() => setShowDropdown(false)}
               className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium hover:bg-surface-container-low transition-colors"
             >

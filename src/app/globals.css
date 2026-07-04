@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-@theme {
+/* ─── Tell Tailwind v4 about the dark variant (class-based) ─── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Light-mode tokens (default) ─── */
+:root {
   /* Background & Surface */
   --color-background:                 #f8f9ff;
   --color-surface:                    #f8f9ff;
@@ -77,6 +81,153 @@
   --radius-lg:      0.5rem;
   --radius-xl:      0.75rem;
   --radius-full:    9999px;
+}
+
+/* ─── Dark-mode token overrides ─── */
+.dark {
+  /* Background & Surface */
+  --color-background:                 #090e17;
+  --color-surface:                    #090e17;
+  --color-surface-dim:                #05080d;
+  --color-surface-bright:             #131d2e;
+  --color-surface-container-lowest:   #04070a;
+  --color-surface-container-low:      #0b121c;
+  --color-surface-container:          #0e1724;
+  --color-surface-container-high:     #121d2e;
+  --color-surface-container-highest:  #162438;
+  --color-surface-variant:            #1d2d44;
+  --color-surface-tint:               #395e9b;
+  --color-inverse-surface:            #eaf1ff;
+
+  /* On-Surface */
+  --color-on-surface:                 #eaf1ff;
+  --color-on-surface-variant:         #b0b7c3;
+  --color-inverse-on-surface:         #090e17;
+
+  /* Primary – "Trust Blue" */
+  --color-primary:                    #8fb3f6;
+  --color-on-primary:                 #001b3f;
+  --color-primary-container:          #002d62;
+  --color-on-primary-container:       #d7e2ff;
+  --color-primary-fixed:              #d7e2ff;
+  --color-primary-fixed-dim:          #abc7ff;
+  --color-on-primary-fixed:           #001b3f;
+  --color-on-primary-fixed-variant:   #1d4682;
+  --color-inverse-primary:            #002d62;
+
+  /* Secondary */
+  --color-secondary:                  #bec6e0;
+  --color-on-secondary:               #131b2e;
+  --color-secondary-container:        #3f465c;
+  --color-on-secondary-container:     #dae2fd;
+  --color-secondary-fixed:            #dae2fd;
+  --color-secondary-fixed-dim:        #bec6e0;
+  --color-on-secondary-fixed:         #131b2e;
+  --color-on-secondary-fixed-variant: #3f465c;
+
+  /* Tertiary – "Success Green" */
+  --color-tertiary:                   #4edea3;
+  --color-on-tertiary:                #002113;
+  --color-tertiary-container:         #004f35;
+  --color-on-tertiary-container:      #6ffbbe;
+  --color-tertiary-fixed:             #6ffbbe;
+  --color-tertiary-fixed-dim:         #4edea3;
+  --color-on-tertiary-fixed:          #002113;
+  --color-on-tertiary-fixed-variant:  #005236;
+
+  /* Error */
+  --color-error:                      #ffb4ab;
+  --color-on-error:                   #690005;
+  --color-error-container:            #93000a;
+  --color-on-error-container:         #ffdad6;
+
+  /* Outlines */
+  --color-outline:                    #8d919a;
+  --color-outline-variant:            #434750;
+}
+
+/*
+ * ─── Register tokens with Tailwind v4 ───────────────────────────────────────
+ * Using @theme inline so generated utilities reference var(--color-*) instead
+ * of baking in the raw hex value. This means .dark overrides cascade correctly.
+ */
+@theme inline {
+  /* Background & Surface */
+  --color-background:                 var(--color-background);
+  --color-surface:                    var(--color-surface);
+  --color-surface-dim:                var(--color-surface-dim);
+  --color-surface-bright:             var(--color-surface-bright);
+  --color-surface-container-lowest:   var(--color-surface-container-lowest);
+  --color-surface-container-low:      var(--color-surface-container-low);
+  --color-surface-container:          var(--color-surface-container);
+  --color-surface-container-high:     var(--color-surface-container-high);
+  --color-surface-container-highest:  var(--color-surface-container-highest);
+  --color-surface-variant:            var(--color-surface-variant);
+  --color-surface-tint:               var(--color-surface-tint);
+  --color-inverse-surface:            var(--color-inverse-surface);
+
+  /* On-Surface */
+  --color-on-surface:                 var(--color-on-surface);
+  --color-on-surface-variant:         var(--color-on-surface-variant);
+  --color-inverse-on-surface:         var(--color-inverse-on-surface);
+
+  /* Primary */
+  --color-primary:                    var(--color-primary);
+  --color-on-primary:                 var(--color-on-primary);
+  --color-primary-container:          var(--color-primary-container);
+  --color-on-primary-container:       var(--color-on-primary-container);
+  --color-primary-fixed:              var(--color-primary-fixed);
+  --color-primary-fixed-dim:          var(--color-primary-fixed-dim);
+  --color-on-primary-fixed:           var(--color-on-primary-fixed);
+  --color-on-primary-fixed-variant:   var(--color-on-primary-fixed-variant);
+  --color-inverse-primary:            var(--color-inverse-primary);
+
+  /* Secondary */
+  --color-secondary:                  var(--color-secondary);
+  --color-on-secondary:               var(--color-on-secondary);
+  --color-secondary-container:        var(--color-secondary-container);
+  --color-on-secondary-container:     var(--color-on-secondary-container);
+  --color-secondary-fixed:            var(--color-secondary-fixed);
+  --color-secondary-fixed-dim:        var(--color-secondary-fixed-dim);
+  --color-on-secondary-fixed:         var(--color-on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--color-on-secondary-fixed-variant);
+
+  /* Tertiary */
+  --color-tertiary:                   var(--color-tertiary);
+  --color-on-tertiary:                var(--color-on-tertiary);
+  --color-tertiary-container:         var(--color-tertiary-container);
+  --color-on-tertiary-container:      var(--color-on-tertiary-container);
+  --color-tertiary-fixed:             var(--color-tertiary-fixed);
+  --color-tertiary-fixed-dim:         var(--color-tertiary-fixed-dim);
+  --color-on-tertiary-fixed:          var(--color-on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant:  var(--color-on-tertiary-fixed-variant);
+
+  /* Error */
+  --color-error:                      var(--color-error);
+  --color-on-error:                   var(--color-on-error);
+  --color-error-container:            var(--color-error-container);
+  --color-on-error-container:         var(--color-on-error-container);
+
+  /* Outlines */
+  --color-outline:                    var(--color-outline);
+  --color-outline-variant:            var(--color-outline-variant);
+
+  /* Spacing */
+  --spacing-xs:      var(--spacing-xs);
+  --spacing-sm:      var(--spacing-sm);
+  --spacing-md:      var(--spacing-md);
+  --spacing-lg:      var(--spacing-lg);
+  --spacing-xl:      var(--spacing-xl);
+  --spacing-gutter:  var(--spacing-gutter);
+  --spacing-margin:  var(--spacing-margin);
+
+  /* Radius */
+  --radius-sm:      var(--radius-sm);
+  --radius-default: var(--radius-default);
+  --radius-md:      var(--radius-md);
+  --radius-lg:      var(--radius-lg);
+  --radius-xl:      var(--radius-xl);
+  --radius-full:    var(--radius-full);
 }
 
 @layer utilities {
