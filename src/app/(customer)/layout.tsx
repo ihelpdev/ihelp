@@ -16,7 +16,8 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
           
           <CustomerNav />
 
-          <h1 className="text-primary font-bold text-headline-sm flex-shrink-0 ml-2 md:ml-0 md:mr-4 lg:mr-8 md:order-first">
+          <h1 className="text-primary font-bold text-headline-sm flex-shrink-0 ml-2 md:ml-0 md:mr-4 lg:mr-8 md:order-first flex items-center gap-2">
+            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
             i-help
           </h1>
 

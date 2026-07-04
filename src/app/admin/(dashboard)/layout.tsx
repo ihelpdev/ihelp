@@ -28,9 +28,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-40">
         <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-on-primary font-black text-sm">iH</span>
-          </div>
+          <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-lg text-primary tracking-tight">Super Admin</span>
         </Link>
         <div className="flex items-center gap-2">
@@ -56,9 +54,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <aside className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
         <div className="p-6 border-b border-outline-variant flex items-center justify-between">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-on-primary font-black text-sm">iH</span>
-            </div>
+            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
             <span className="font-bold text-xl text-primary tracking-tight">Super Admin</span>
           </Link>
           <button 

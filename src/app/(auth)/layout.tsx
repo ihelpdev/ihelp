@@ -8,7 +8,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-32 pb-16">
         <div className="w-full md:w-1/2 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant p-8">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 items-center gap-2">
+            <img src="/icon.png" alt="i-help logo" className="w-10 h-10 object-contain" />
             <h1 className="text-primary font-bold text-headline-md tracking-tight">i-help</h1>
           </div>
           {children}

@@ -15,7 +15,10 @@ export default function GlobalLoader({ message }: GlobalLoaderProps) {
           </div>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <h1 className="text-primary font-bold text-headline-sm animate-pulse">i-help</h1>
+          <div className="flex items-center gap-2 animate-pulse">
+            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-primary font-bold text-headline-sm">i-help</h1>
+          </div>
           {message && (
             <p className="text-on-surface-variant text-body-sm animate-pulse">{message}</p>
           )}

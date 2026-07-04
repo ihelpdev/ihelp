@@ -160,9 +160,7 @@ export default function RegisterAdminPage() {
   return (
     <div className="min-h-screen bg-surface-container flex flex-col items-center py-10 px-4">
       <div className="flex items-center gap-2 mb-8">
-        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-          <span className="text-on-primary font-black text-lg">iH</span>
-        </div>
+        <img src="/icon.png" alt="i-help logo" className="w-10 h-10 object-contain" />
         <span className="font-bold text-2xl text-primary tracking-tight">Super Admin</span>
       </div>
       <Suspense fallback={<div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>

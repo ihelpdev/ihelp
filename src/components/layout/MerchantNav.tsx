@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Home, Wallet, User, FolderOpen, Compass, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Briefcase, Home, Wallet, User, FolderOpen, Compass } from "lucide-react";
 
 const TABS = [
   { href: "/merchant/dashboard", label: "Home",      icon: <Home className="w-5 h-5" /> },
@@ -16,22 +15,11 @@ const TABS = [
 
 export default function MerchantNav() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  // Removed sidebar state since we are using bottom nav
 
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button 
-        className="md:hidden p-2 -ml-2 text-on-surface"
-        onClick={() => setIsOpen(true)}
-      >
-        <Menu className="w-6 h-6" />
-      </button>
-
       {/* Desktop Nav */}
       <nav className="hidden md:flex flex-1 items-center gap-1 lg:gap-2 px-2 overflow-x-auto no-scrollbar">
         {TABS.map(({ href, label, icon }) => {
@@ -53,42 +41,28 @@ export default function MerchantNav() {
         })}
       </nav>
 
-      {/* Mobile Sidebar Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <aside className={`fixed top-0 left-0 h-[100dvh] w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col z-50 transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
-         <div className="p-4 border-b border-outline-variant flex justify-between items-center">
-            <span className="font-bold text-lg text-primary">Menu</span>
-            <button onClick={() => setIsOpen(false)} className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg">
-               <X className="w-5 h-5" />
-            </button>
-         </div>
-         <nav className="flex-1 p-4 flex flex-col gap-2 overflow-y-auto">
-           {TABS.map(({ href, label, icon }) => {
-             const isActive = pathname === href;
-             return (
-               <Link 
-                 key={href}
-                 href={href}
-                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${
-                   isActive 
-                     ? "bg-primary/10 text-primary" 
-                     : "hover:bg-surface-container text-on-surface"
-                 }`}
-               >
-                 <div className={isActive ? "text-primary" : "text-on-surface-variant"}>{icon}</div>
-                 {label}
-               </Link>
-             );
-           })}
-         </nav>
-      </aside>
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-outline-variant pb-safe z-50">
+        <div className="flex justify-around items-center h-16">
+          {TABS.map(({ href, label, icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+                  isActive ? "text-primary font-bold" : "text-on-surface-variant font-medium hover:text-on-surface"
+                }`}
+              >
+                <div className={`p-1 rounded-full ${isActive ? 'bg-primary/10' : ''}`}>
+                  {icon}
+                </div>
+                <span className="text-[10px] leading-none">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </>
   );
 }

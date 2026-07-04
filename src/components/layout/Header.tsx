@@ -5,7 +5,10 @@ export function Header() {
   return (
     <header className="fixed top-0 w-full z-50 bg-surface-container-lowest border-b border-outline-variant shadow-sm">
       <nav className="flex items-center justify-between px-margin py-md max-w-7xl mx-auto">
-        <Link href="/" className="font-headline-lg text-headline-lg font-bold text-primary hover:opacity-80 transition-opacity">i-help</Link>
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
+          <span className="font-headline-lg text-headline-lg font-bold text-primary">i-help</span>
+        </Link>
         <div className="hidden md:flex items-center gap-lg">
           <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/customer/dashboard">Find Services</Link>
           <Link className="text-on-secondary-container font-medium font-label-lg hover:text-primary transition-colors duration-200" href="/explore-subscriptions">Explore Subscriptions</Link>
