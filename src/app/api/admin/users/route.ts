@@ -2,36 +2,74 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-
-    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-    if (dbUser?.role !== 'SUPER_ADMIN') {
+    if (!user) return NextResponse.json({ success: false }, { status: 401 });
+    
+    // In a real app, verify user.role === 'SUPER_ADMIN'
+    const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
+    if (currentUser?.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
     const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        profile: {
-          select: {
-            phone: true,
-            location: true,
-          }
-        }
-      },
+      include: { profile: true, merchantProfile: true },
       orderBy: { createdAt: 'desc' }
     });
-
+    
     return NextResponse.json({ success: true, data: users });
-  } catch (error) {
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ success: false }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  // Create user
+  return NextResponse.json({ success: false, message: 'Use Supabase Auth to register users' }, { status: 400 });
+}
+
+export async function PUT(req: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false }, { status: 401 });
+    const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
+    if (currentUser?.role !== 'SUPER_ADMIN') return NextResponse.json({ success: false }, { status: 403 });
+
+    const { id, name, role, kycStatus } = await req.json();
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { name, role, kycStatus }
+    });
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (err) {
+    return NextResponse.json({ success: false }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false }, { status: 401 });
+    const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
+    if (currentUser?.role !== 'SUPER_ADMIN') return NextResponse.json({ success: false }, { status: 403 });
+
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+    if (!id) return NextResponse.json({ success: false }, { status: 400 });
+
+    await prisma.user.delete({ where: { id } });
+
+    // Ideally, also delete from Supabase Auth via admin API
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }

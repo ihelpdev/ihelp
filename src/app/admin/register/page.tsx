@@ -23,7 +23,7 @@ function RegisterAdminForm() {
 
   // In a real application, this should be an environment variable
   // or a secure backend check. For demonstration, we use a simple hardcoded secret.
-  const ADMIN_SECRET = "IHELP_ADMIN_2026";
+  const ADMIN_SECRET = "MYIHELP_ADMIN_2026";
 
   const handleSignup = async () => {
     setErrorMsg(null);
@@ -43,7 +43,7 @@ function RegisterAdminForm() {
           name: formData.name,
           role: "SUPER_ADMIN",
         },
-        emailRedirectTo: "https://ihelp-ten.vercel.app/admin/login",
+        emailRedirectTo: "https://myihelp.vercel.app/admin/login",
       },
     });
 
@@ -119,7 +119,7 @@ function RegisterAdminForm() {
         <Input 
           label="Email Address" 
           type="email" 
-          placeholder="admin@ihelp.com"
+          placeholder="admin@myihelp.com"
           value={formData.email}
           onChange={(e) => setFormData({...formData, email: e.target.value})}
         />

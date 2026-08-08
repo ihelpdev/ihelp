@@ -98,6 +98,36 @@ export default function ProfileTab() {
           </div>
         )}
 
+        {/* Referral Section */}
+        {user?.referralCode && (
+          <div className="border-t border-outline-variant pt-6">
+            <h4 className="text-sm font-bold text-on-surface flex items-center gap-2 mb-3">
+              <Users className="w-4 h-4 text-primary" /> Your Referral Link
+            </h4>
+            <p className="text-xs text-on-surface-variant mb-4">
+              Share this link with friends. You will earn 100 credits when they complete their first booking!
+            </p>
+            <div className="flex items-center gap-2">
+              <input 
+                type="text" 
+                readOnly 
+                value={`${typeof window !== 'undefined' ? window.location.origin : 'https://myihelp.vercel.app'}/register?role=customer&referralCode=${user.referralCode}`}
+                className="flex-1 bg-surface-container-low text-on-surface px-3 py-2 rounded-lg text-sm font-mono border border-outline-variant outline-none"
+              />
+              <button 
+                onClick={() => {
+                  const link = `${window.location.origin}/register?role=customer&referralCode=${user.referralCode}`;
+                  navigator.clipboard.writeText(link);
+                  alert("Referral link copied to clipboard!");
+                }}
+                className="bg-primary/10 text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/20 transition-colors"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Log out */}
         <div className="border-t border-outline-variant pt-6 flex justify-center">
           <button

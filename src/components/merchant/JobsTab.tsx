@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { updateJobStatus, releaseJobEscrow } from "@/lib/features/jobs/jobsSlice";
-import { Briefcase, CheckCircle2, AlertCircle, XCircle, Clock, MapIcon, Navigation, Phone } from "lucide-react";
+import { Briefcase, CheckCircle2, AlertCircle, XCircle, Clock, MapIcon, Navigation, Phone, MessageSquare } from "lucide-react";
 import InAppRoutingMap from "./InAppRoutingMap";
+import JobChat from "../shared/JobChat";
 
 export default function JobsTab() {
   const dispatch = useDispatch();
@@ -22,18 +23,11 @@ export default function JobsTab() {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [appSettings, setAppSettings] = useState<{ routingMode?: string }>({});
   const [navigatingJob, setNavigatingJob] = useState<any>(null);
+  const [chatJob, setChatJob] = useState<{ id: string, name: string, customerId: string } | null>(null);
 
 
   
-  useEffect(() => {
-    // Fetch settings for map routing mode
-    fetch("/api/admin/settings")
-      .then(res => res.json())
-      .then(data => { if (data.success) setAppSettings(data.data); })
-      .catch(console.error);
-  }, []);
 
   const filteredJobs = merchantJobs.filter(j => {
     if (activeFilter === "pending") return j.status === "pending";
@@ -71,16 +65,39 @@ export default function JobsTab() {
   };
 
   const handleNavigate = (job: any) => {
-    // Mock customer location
-    const lat = 9.0820; 
-    const lng = 8.6753;
-    
-    if (appSettings.routingMode === "in_app") {
-      setNavigatingJob(job);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setNavigatingJob({
+            ...job,
+            startLat: position.coords.latitude,
+            startLng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Could not get your current location. Please ensure location services are enabled.");
+          // Fallback to default
+          setNavigatingJob({
+            ...job,
+            startLat: 9.0579,
+            startLng: 8.6632
+          });
+        }
+      );
     } else {
-      // Default to external intent link
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
+      alert("Geolocation is not supported by your browser.");
+      setNavigatingJob({
+        ...job,
+        startLat: 9.0579,
+        startLng: 8.6632
+      });
     }
+    
+    // Alert customer asynchronously
+    fetch(`/api/jobs/${job.id}/alert-customer`, { method: "POST" })
+      .then(() => console.log("Customer notified"))
+      .catch((err) => console.error("Error alerting customer:", err));
   };
 
   return (
@@ -155,9 +172,15 @@ export default function JobsTab() {
                 </div>
               )}
 
-              {job.status === "accepted" && (
+              {['accepted', 'en_route'].includes(job.status) && (
                 <div className="flex gap-3 pt-4 border-t border-outline-variant mt-4">
-                  <button disabled={updatingId === job.id} onClick={() => handleStatusUpdate(job.id, "en_route")} className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2 disabled:opacity-50">
+                  <button 
+                    onClick={() => setChatJob({ id: job.id, name: job.serviceName, customerId: job.customerId })}
+                    className="flex-1 bg-surface-container-high text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container-highest transition-colors flex justify-center items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" /> Chat
+                  </button>
+                  <button disabled={updatingId === job.id} onClick={() => handleStatusUpdate(job.id, "en_route")} className="flex-1 bg-primary text-on-primary py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2 disabled:opacity-50">
                     <Navigation className="w-4 h-4" /> {updatingId === job.id ? "Updating..." : "Head to Location (En Route)"}
                   </button>
                 </div>
@@ -252,9 +275,20 @@ export default function JobsTab() {
 
       {navigatingJob && (
         <InAppRoutingMap
-          startLoc={{ lat: 9.0579, lng: 8.6632 }} // Mock merchant start loc
-          endLoc={{ lat: 9.0820, lng: 8.6753 }}   // Mock customer end loc
+          startLoc={{ lat: navigatingJob.startLat ?? 9.0579, lng: navigatingJob.startLng ?? 8.6632, label: "Your Location" }}
+          endLoc={{ lat: navigatingJob.customerLat ?? 9.0820, lng: navigatingJob.customerLng ?? 8.6753, label: navigatingJob.customerAddress ?? "Customer Location" }}
+          customerPhone={navigatingJob.customerPhone}
           onClose={() => setNavigatingJob(null)}
+          onArrived={() => handleStatusUpdate(navigatingJob.id, "completed")}
+        />
+      )}
+
+      {chatJob && (
+        <JobChat
+          jobId={chatJob.id}
+          jobName={chatJob.name}
+          receiverId={chatJob.customerId}
+          onClose={() => setChatJob(null)}
         />
       )}
     </div>

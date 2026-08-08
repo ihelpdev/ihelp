@@ -1,10 +1,34 @@
-import { Briefcase, Clock, ShieldCheck, ArrowRight, User } from "lucide-react";
+import { Briefcase, Clock, ShieldCheck, ArrowRight, User, Power } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { useState, useEffect } from "react";
 
 export default function MerchantHomeTab({ onTabSwitch }: { onTabSwitch?: (t: string) => void }) {
   const { user } = useSelector((s: RootState) => s.auth);
   const { jobs } = useSelector((s: RootState) => s.jobs);
+  const [isAvailable, setIsAvailable] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/merchant/availability')
+      .then(r => r.json())
+      .then(d => { if (d.success) setIsAvailable(d.data.isAvailable); })
+      .catch(console.error);
+  }, []);
+
+  const toggleAvailability = async () => {
+    const newState = !isAvailable;
+    setIsAvailable(newState);
+    try {
+      await fetch('/api/merchant/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAvailable: newState })
+      });
+    } catch (err) {
+      console.error(err);
+      setIsAvailable(!newState); // revert on error
+    }
+  };
 
   const pendingCount = jobs.filter(j => j.status === 'pending').length;
   const activeCount  = jobs.filter(j => j.status === 'accepted').length;
@@ -13,9 +37,21 @@ export default function MerchantHomeTab({ onTabSwitch }: { onTabSwitch?: (t: str
     <div className="flex flex-col gap-6">
       <div className="bg-primary text-on-primary rounded-2xl p-6 md:p-8 flex flex-col gap-4 relative overflow-hidden shadow-lg">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="relative z-10">
-          <h2 className="text-2xl font-bold font-display">Welcome back, {user?.name?.split(' ')[0] ?? 'Pro'}!</h2>
-          <p className="text-on-primary/80 mt-1">You have {pendingCount} new job requests pending your review.</p>
+        <div className="relative z-10 flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold font-display">Welcome back, {user?.name?.split(' ')[0] ?? 'Pro'}!</h2>
+            <p className="text-on-primary/80 mt-1">You have {pendingCount} new job requests pending your review.</p>
+          </div>
+          <button 
+            onClick={toggleAvailability}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${
+              isAvailable 
+                ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/30 hover:bg-emerald-500/30" 
+                : "bg-surface/20 text-white border-white/30 hover:bg-surface/30"
+            }`}
+          >
+            <Power className="w-3.5 h-3.5" /> {isAvailable ? "Online" : "Away"}
+          </button>
         </div>
         <div className="flex gap-3 relative z-10 mt-2">
           <button 

@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import ImageWithFallback from "@/components/ui/ImageWithFallback";
 
 const ServiceMap = dynamic(() => import("./ServiceMap"), { ssr: false, loading: () => <div className="h-[600px] w-full bg-surface-container rounded-xl animate-pulse" /> });
+const LocationPickerMap = dynamic(() => import("@/components/merchant/LocationPickerMap"), { ssr: false, loading: () => <div className="h-[300px] w-full bg-surface-container rounded-xl animate-pulse" /> });
 
 import servicesRaw from "@/mockup/services.json";
 
@@ -67,6 +68,13 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
   const [showFilters,           setShowFilters]           = useState(false);
 
   const profileCompleted = useSelector((state: RootState) => state.auth.profileCompleted);
+  const profileLat = useSelector((state: RootState) => (state.auth.user?.profile as any)?.lat);
+  const profileLng = useSelector((state: RootState) => (state.auth.user?.profile as any)?.lng);
+  const profileLocation = useSelector((state: RootState) => state.auth.user?.profile?.location);
+
+  const [deliveryLoc, setDeliveryLoc] = useState<{lat: number, lng: number, address: string} | null>(null);
+  const [showMapSelector, setShowMapSelector] = useState(false);
+
   const [mounted,  setMounted]  = useState(false);
   const [onDemand, setOnDemand] = useState<any[]>([]);
   const [subs, setSubs]         = useState<any[]>([]);
@@ -174,12 +182,22 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
       })()
     : 0;
 
+  const initDeliveryLoc = () => {
+    if (profileLat && profileLng) {
+      setDeliveryLoc({ lat: profileLat, lng: profileLng, address: profileLocation || "Home Address" });
+    } else {
+      setDeliveryLoc(null);
+    }
+  };
+
   const openOD  = (id: string) => {
     if (!profileCompleted) return setToast("Please complete your profile to book services.");
+    initDeliveryLoc();
     setModal({ kind: "on_demand",    serviceId: id, step: "detail", frequencyKey: null });
   };
   const openSub = (id: string) => {
     if (!profileCompleted) return setToast("Please complete your profile to book services.");
+    initDeliveryLoc();
     setModal({ kind: "subscription", serviceId: id, step: "detail", frequencyKey: null });
   };
   const goStep  = (step: FlowStep, patch?: Partial<ModalState>) =>
@@ -227,6 +245,9 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           amount: odSvc.suggested_base_rate_ngn,
           customerNote: customerNote.trim() || null,
           customerNoteImages: noteImages,
+          customerAddress: deliveryLoc?.address,
+          customerLat: deliveryLoc?.lat,
+          customerLng: deliveryLoc?.lng,
         })
       });
       
@@ -255,7 +276,10 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
           serviceId: subSvc.id,
           serviceName: subSvc.name,
           amount: subTotal,
-          frequency: freqEntry.frequency_key
+          frequency: freqEntry.frequency_key,
+          customerAddress: deliveryLoc?.address,
+          customerLat: deliveryLoc?.lat,
+          customerLng: deliveryLoc?.lng,
         })
       });
 
@@ -456,8 +480,44 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                     )}
                   </div>
                 )}
+                {/* Delivery Location Section */}
+                <div style={{ marginTop: "12px", borderTop: "1px solid #e5e7eb", paddingTop: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>Delivery Location</span>
+                    <button onClick={() => setShowMapSelector(!showMapSelector)} style={{ fontSize: "12px", color: "#2563eb", background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}>
+                      {showMapSelector ? "Close Map" : "Change Location"}
+                    </button>
+                  </div>
+                  
+                  {showMapSelector ? (
+                    <LocationPickerMap
+                      locations={deliveryLoc ? [{ lat: deliveryLoc.lat, lng: deliveryLoc.lng, address: deliveryLoc.address }] : []}
+                      onChange={(locs) => {
+                        if (locs.length > 0) {
+                          setDeliveryLoc({ lat: locs[0].lat, lng: locs[0].lng, address: locs[0].address || "Selected Location" });
+                        } else {
+                          setDeliveryLoc(null);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{ background: "#f9fafb", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+                      {deliveryLoc ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <MapIcon style={{ width: 16, height: 16, color: "#2563eb" }} />
+                          <span style={{ fontSize: "13px", color: "#374151" }}>{deliveryLoc.address}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "13px", color: "#dc2626", fontWeight: 500 }}>
+                          Please set a delivery location to continue.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
               </div>
-              <ModalBtn label={isSubmitting ? "Confirming..." : "Confirm & Lock Funds"} onClick={confirmOD} icon={<ShieldCheck style={{ width: 16, height: 16 }} />} disabled={isSubmitting} />
+              <ModalBtn label={isSubmitting ? "Confirming..." : "Confirm & Lock Funds"} onClick={confirmOD} icon={<ShieldCheck style={{ width: 16, height: 16 }} />} disabled={isSubmitting || !deliveryLoc} />
             </div>
           )}
 
@@ -520,8 +580,44 @@ export default function ExploreTab({ onTabSwitch }: { onTabSwitch?: (tab: string
                 <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "8px" }}>
                   <SummaryRow label="Monthly Total" value={`NGN ${subTotal.toLocaleString()}`} highlight />
                 </div>
+                
+                {/* Delivery Location Section */}
+                <div style={{ marginTop: "8px", borderTop: "1px solid #e5e7eb", paddingTop: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>Delivery Location</span>
+                    <button onClick={() => setShowMapSelector(!showMapSelector)} style={{ fontSize: "12px", color: "#2563eb", background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}>
+                      {showMapSelector ? "Close Map" : "Change Location"}
+                    </button>
+                  </div>
+                  
+                  {showMapSelector ? (
+                    <LocationPickerMap
+                      locations={deliveryLoc ? [{ lat: deliveryLoc.lat, lng: deliveryLoc.lng, address: deliveryLoc.address }] : []}
+                      onChange={(locs) => {
+                        if (locs.length > 0) {
+                          setDeliveryLoc({ lat: locs[0].lat, lng: locs[0].lng, address: locs[0].address || "Selected Location" });
+                        } else {
+                          setDeliveryLoc(null);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{ background: "#f9fafb", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+                      {deliveryLoc ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <MapIcon style={{ width: 16, height: 16, color: "#2563eb" }} />
+                          <span style={{ fontSize: "13px", color: "#374151" }}>{deliveryLoc.address}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "13px", color: "#dc2626", fontWeight: 500 }}>
+                          Please set a delivery location to continue.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-              <ModalBtn label={isSubmitting ? "Confirming..." : "Confirm Subscription"} onClick={confirmSub} icon={<ShieldCheck style={{ width: 16, height: 16 }} />} disabled={isSubmitting} />
+              <ModalBtn label={isSubmitting ? "Confirming..." : "Confirm Subscription"} onClick={confirmSub} icon={<ShieldCheck style={{ width: 16, height: 16 }} />} disabled={isSubmitting || !deliveryLoc} />
             </div>
           )}
 

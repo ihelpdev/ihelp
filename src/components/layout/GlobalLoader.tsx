@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface GlobalLoaderProps {
   message?: string;
@@ -16,11 +16,17 @@ export default function GlobalLoader({ message }: GlobalLoaderProps) {
         </div>
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-2 animate-pulse">
-            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
-            <h1 className="text-primary font-bold text-headline-sm">i-help</h1>
+            <img
+              src="/icon.png"
+              alt="myIhelp logo"
+              className="w-8 h-8 object-contain"
+            />
+            <h1 className="text-primary font-bold text-headline-sm">myIhelp</h1>
           </div>
           {message && (
-            <p className="text-on-surface-variant text-body-sm animate-pulse">{message}</p>
+            <p className="text-on-surface-variant text-body-sm animate-pulse">
+              {message}
+            </p>
           )}
         </div>
       </div>

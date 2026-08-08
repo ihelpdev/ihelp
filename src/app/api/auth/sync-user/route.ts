@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import crypto from 'crypto';
 
 export async function POST(request: Request) {
   console.log('[sync-user API] Received sync request...');
   try {
     const data = await request.json();
-    const { id, email, name, role } = data;
-    console.log(`[sync-user API] Payload received for ID: ${id}, Email: ${email}, Role: ${role}`);
+    const { id, email, name, role, referredBy } = data;
+    console.log(`[sync-user API] Payload received for ID: ${id}, Email: ${email}, Role: ${role}, ReferredBy: ${referredBy}`);
 
     if (!id || !email) {
       console.warn('[sync-user API] Missing user details, returning 400.');
@@ -25,12 +26,25 @@ export async function POST(request: Request) {
     }
 
     console.log(`[sync-user API] User ${id} not found. Attempting to create new user in Prisma database...`);
+    
+    // Check if the referredBy code actually exists
+    let validReferrer = null;
+    if (referredBy) {
+      const referrer = await prisma.user.findUnique({ where: { referralCode: referredBy } });
+      if (referrer) validReferrer = referrer.referralCode;
+    }
+
+    // Generate unique referral code
+    const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+
     const newUser = await prisma.user.create({
       data: {
-        id: id, // Syncing the UUID from Supabase to Prisma
+        id: id,
         email: email,
         name: name || 'User',
         role: role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : (role === 'MERCHANT' ? 'MERCHANT' : 'CUSTOMER'),
+        referralCode,
+        referredBy: validReferrer
       },
     });
 

@@ -1,8 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck, ArrowRight, BadgeCheck, Star, Lock, Search, Shield, Siren, Store, Banknote, Calendar, Wallet, Wrench, PlusCircle, Zap, Car, Sparkles, CheckCircle2, Fingerprint, Users, Landmark } from "lucide-react";
+import prisma from "@/lib/prisma";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const verifiedMerchantsCount = await prisma.user.count({
+    where: { role: "MERCHANT", kycStatus: "VERIFIED" }
+  });
+
+  const completedJobsCount = await prisma.job.count({
+    where: { status: "COMPLETED" }
+  });
+
+  // Calculate some display metrics (can add logic later)
+  const displayMerchants = verifiedMerchantsCount > 0 ? verifiedMerchantsCount + "+" : "100+";
+  const displayJobs = completedJobsCount > 0 ? completedJobsCount + "+" : "500+";
   return (
     <main className="pt-12 overflow-x-hidden flex-1 bg-background">
       {/* Section 1: Hero */}
@@ -45,13 +57,18 @@ export default function LandingPage() {
             {/* Quick Metrics Strip */}
             <div className="flex items-center gap-6 pt-6 border-t border-outline-variant/60 w-full justify-center lg:justify-start">
               <div>
-                <div className="text-2xl font-black text-primary">45 Mins</div>
-                <div className="text-xs text-on-surface-variant">Avg. Response Time</div>
+                <div className="text-2xl font-black text-primary">{displayMerchants}</div>
+                <div className="text-xs text-on-surface-variant">Verified Pros</div>
               </div>
               <div className="h-8 w-px bg-outline-variant/60"></div>
               <div>
-                <div className="text-2xl font-black text-primary">Verified</div>
-                <div className="text-xs text-on-surface-variant">Physical Agent Audit</div>
+                <div className="text-2xl font-black text-primary">{displayJobs}</div>
+                <div className="text-xs text-on-surface-variant">Jobs Completed</div>
+              </div>
+              <div className="h-8 w-px bg-outline-variant/60"></div>
+              <div>
+                <div className="text-2xl font-black text-primary">100%</div>
+                <div className="text-xs text-on-surface-variant">Agent Audited</div>
               </div>
             </div>
           </div>
@@ -69,7 +86,7 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-tertiary-container/40"></div>
                   <div className="w-3 h-3 rounded-full bg-primary/40"></div>
                 </div>
-                <div className="bg-surface-container px-4 py-1 rounded-lg text-xs text-on-surface-variant font-mono">i-help.ng/dashboard</div>
+                <div className="bg-surface-container px-4 py-1 rounded-lg text-xs text-on-surface-variant font-mono">myihelp.ng/dashboard</div>
               </div>
 
               {/* Dynamic Grid Contents */}
@@ -137,7 +154,7 @@ export default function LandingPage() {
       <section className="bg-surface-container px-margin py-32">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
-            <h2 className="font-headline-lg text-4xl text-primary mb-md">Why Choose i-help?</h2>
+            <h2 className="font-headline-lg text-4xl text-primary mb-md">Why Choose myiHelp?</h2>
             <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
@@ -154,7 +171,7 @@ export default function LandingPage() {
                   <BadgeCheck className="text-primary" />
                   <div>
                     <h4 className="font-headline-sm mb-xs">Dual-Layer Ratings</h4>
-                    <p className="text-on-surface-variant font-body-md">Peer reviews backed by physical audit reports from i-help agents.</p>
+                    <p className="text-on-surface-variant font-body-md">Peer reviews backed by physical audit reports from myiHelp agents.</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-colors flex items-start gap-md">
@@ -399,7 +416,7 @@ export default function LandingPage() {
                 <p className="font-body-lg mb-lg text-white">Want to monetize your skills?</p>
                 <Link href="/register?role=merchant">
                   <button className="w-full bg-white text-tertiary-container py-lg rounded-xl font-headline-sm shadow-xl hover:scale-105 transition-all">
-                    Register as an i-help Merchant
+                    Register as a myiHelp Merchant
                   </button>
                 </Link>
               </div>

@@ -19,6 +19,7 @@ function RegisterForm() {
     name: "",
     email: "",
     password: "",
+    referralCode: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -51,7 +52,7 @@ function RegisterForm() {
           name: formData.name,
           role: role,
         },
-        emailRedirectTo: "https://ihelp-ten.vercel.app/login",
+        emailRedirectTo: "https://myihelp.vercel.app/login",
       },
     });
     setIsLoading(false);
@@ -85,6 +86,7 @@ function RegisterForm() {
           email: formData.email,
           name: formData.name,
           role: role,
+          referredBy: formData.referralCode,
         }),
       });
       
@@ -182,6 +184,12 @@ function RegisterForm() {
               placeholder="Create a secure password"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
+            />
+            <Input 
+              label="Referral Code (Optional)" 
+              placeholder="Got invited? Enter code here"
+              value={formData.referralCode}
+              onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
             />
           </div>
 

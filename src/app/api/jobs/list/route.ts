@@ -56,6 +56,9 @@ export async function GET(req: Request) {
       merchantPhone:       job.merchant?.profile?.phone,
       customerNote:        job.customerNote ?? null,
       customerNoteImages:  job.customerNoteImages ?? [],
+      customerAddress:     job.customerAddress ?? null,
+      customerLat:         job.customerLat ?? null,
+      customerLng:         job.customerLng ?? null,
     }));
 
     return NextResponse.json({ success: true, data: formattedJobs });

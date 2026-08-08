@@ -3,16 +3,26 @@ import { RootState } from "@/lib/store";
 import { logout, setShowProfileModal } from "@/lib/features/auth/authSlice";
 import {
   User, CheckCircle2, LogOut, Phone, MapPin,
-  Calendar, Users, Shield, Pencil, Star, Percent, Settings
+  Calendar, Users, Shield, Pencil, Star, Percent, Settings, Briefcase
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function MerchantProfileTab() {
   const dispatch = useDispatch();
   const router   = useRouter();
 
   const { user, profileCompleted } = useSelector((state: RootState) => state.auth);
+  
+  const [stats, setStats] = useState({ avgRating: "5.0", totalRatings: 0, completedJobs: 0 });
+
+  useEffect(() => {
+    fetch('/api/merchant/stats')
+      .then(r => r.json())
+      .then(d => { if (d.success) setStats(d.data); })
+      .catch(console.error);
+  }, []);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -92,17 +102,17 @@ export default function MerchantProfileTab() {
         {/* Right Column: Details & Stats */}
         <div className="md:col-span-2 flex flex-col gap-6">
           
-          {/* Performance Stats (Mocked from MerchantProfile) */}
+          {/* Performance Stats */}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm flex flex-col gap-2">
               <div className="bg-amber-100 text-amber-800 p-2 w-max rounded-lg"><Star className="w-5 h-5" /></div>
-              <div className="font-bold text-2xl text-primary mt-1">4.9 / 5.0</div>
-              <div className="text-xs text-on-surface-variant font-medium">Customer Rating</div>
+              <div className="font-bold text-2xl text-primary mt-1">{stats.avgRating} <span className="text-sm font-medium text-on-surface-variant">/ 5.0</span></div>
+              <div className="text-xs text-on-surface-variant font-medium">Customer Rating ({stats.totalRatings} reviews)</div>
             </div>
             <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm flex flex-col gap-2">
-              <div className="bg-emerald-100 text-emerald-800 p-2 w-max rounded-lg"><Percent className="w-5 h-5" /></div>
-              <div className="font-bold text-2xl text-primary mt-1">98%</div>
-              <div className="text-xs text-on-surface-variant font-medium">Acceptance Rate</div>
+              <div className="bg-emerald-100 text-emerald-800 p-2 w-max rounded-lg"><Briefcase className="w-5 h-5" /></div>
+              <div className="font-bold text-2xl text-primary mt-1">{stats.completedJobs}</div>
+              <div className="text-xs text-on-surface-variant font-medium">Completed Jobs</div>
             </div>
           </div>
 

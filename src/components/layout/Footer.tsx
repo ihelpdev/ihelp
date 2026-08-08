@@ -6,10 +6,10 @@ export function Footer() {
       <div className="flex flex-col md:flex-row justify-between items-center gap-lg px-margin py-xl max-w-7xl mx-auto">
         <div className="flex flex-col items-center md:items-start gap-sm">
           <div className="flex items-center gap-2">
-            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
-            <div className="font-headline-sm font-black text-primary">i-help</div>
+            <img src="/icon.png" alt="myiHelp logo" className="w-8 h-8 object-contain" />
+            <div className="font-headline-sm font-black text-primary">myiHelp</div>
           </div>
-          <p className="text-on-surface-variant font-body-md text-center md:text-left">© 2026 i-help Marketplace. All rights reserved.</p>
+          <p className="text-on-surface-variant font-body-md text-center md:text-left">© 2026 myiHelp Marketplace. All rights reserved.</p>
         </div>
         <div className="flex flex-wrap justify-center gap-xl">
           <Link className="text-on-surface-variant font-label-md hover:text-primary transition-all duration-200" href="/customer/dashboard">Find Services</Link>

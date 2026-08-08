@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Calendar, Wallet, User } from "lucide-react";
+import { Compass, Calendar, Wallet, User, Repeat } from "lucide-react";
 
 const TABS = [
   { href: "/customer/dashboard", label: "Explore", icon: <Compass className="w-5 h-5" /> },
   { href: "/customer/requests", label: "Requests", icon: <Calendar className="w-5 h-5" /> },
+  { href: "/customer/subscriptions", label: "Subs", icon: <Repeat className="w-5 h-5" /> },
   { href: "/customer/wallet", label: "Wallet", icon: <Wallet className="w-5 h-5" /> },
   { href: "/customer/profile", label: "Profile", icon: <User className="w-5 h-5" /> },
 ];

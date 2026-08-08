@@ -16,6 +16,7 @@ export interface FullUser {
   role: string;
   profileCompleted: boolean;
   profile: UserProfile | null;
+  referralCode?: string;
 }
 
 export interface AuthState {

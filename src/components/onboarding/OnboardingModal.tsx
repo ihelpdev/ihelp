@@ -8,6 +8,12 @@ import { X, CheckCircle2, ChevronRight, User, MapPin, Calendar, Phone, Briefcase
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setFullUser } from "@/lib/features/auth/authSlice";
+import dynamic from "next/dynamic";
+
+const LocationPickerMap = dynamic(() => import("@/components/merchant/LocationPickerMap"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-surface-container rounded-xl animate-pulse" />
+});
 
 export default function OnboardingModal() {
   const dispatch = useDispatch();
@@ -26,7 +32,7 @@ export default function OnboardingModal() {
   const [skipped, setSkipped] = useState(false);
 
   // Pre-populate from existing profile so the "Edit" flow shows current values
-  const existingProfile = auth.user?.profile;
+  const existingProfile = auth.user?.profile as any; // Cast as any because Redux types might not have lat/lng yet
   const [formData, setFormData] = useState({
     gender: existingProfile?.gender ?? "MALE",
     phone:  existingProfile?.phone    ?? "",
@@ -34,8 +40,11 @@ export default function OnboardingModal() {
               ? new Date(existingProfile.dob).toISOString().slice(0, 10)
               : "",
     location: existingProfile?.location ?? "",
+    lat: existingProfile?.lat ?? null,
+    lng: existingProfile?.lng ?? null,
     nin: "",
     bvn: "",
+    avatarUrl: existingProfile?.avatarUrl ?? "",
   });
 
   useEffect(() => { setMounted(true); }, []);
@@ -64,10 +73,7 @@ export default function OnboardingModal() {
       const data = await res.json();
       console.log({ data })
       if (data.success) {
-        // Sync the full updated user (with profile) into Redux immediately
-        if (data.user) {
-          dispatch(setFullUser(data.user));
-        }
+        if (data.user) dispatch(setFullUser(data.user));
         dispatch({ type: "auth/setShowProfileModal", payload: false });
       } else {
         setErrorMsg(data.message || "Something went wrong.");
@@ -75,6 +81,23 @@ export default function OnboardingModal() {
     } catch (err) {
       console.log({ err });
       setErrorMsg("Failed to connect to server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', e.target.files[0]);
+      fd.append('upload_preset', 'ihelp-images');
+      const res = await fetch('https://api.cloudinary.com/v1_1/dik1cosdn/image/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.secure_url) setFormData(prev => ({ ...prev, avatarUrl: data.secure_url }));
+    } catch {
+      setErrorMsg('Avatar upload failed');
     } finally {
       setLoading(false);
     }
@@ -108,7 +131,22 @@ export default function OnboardingModal() {
 
           {/* STEP 1: Basic Info */}
           {step === 1 && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              
+              <div className="flex flex-col items-center gap-2 mb-4">
+                <div className="w-20 h-20 bg-surface-container rounded-full overflow-hidden border-2 border-outline-variant flex items-center justify-center">
+                  {formData.avatarUrl ? (
+                    <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-on-surface-variant" />
+                  )}
+                </div>
+                <label className="text-xs font-semibold text-primary cursor-pointer hover:underline">
+                  Upload Photo
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={loading} />
+                </label>
+              </div>
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-on-surface flex items-center gap-2">
                   <User className="w-4 h-4 text-primary" /> Gender
@@ -151,14 +189,17 @@ export default function OnboardingModal() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-on-surface flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" /> Location / Address
+                  <MapPin className="w-4 h-4 text-primary" /> Location / Address <span className="text-on-surface-variant font-normal text-xs">(Optional)</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="Lagos, Nigeria"
-                  value={formData.location}
-                  onChange={e => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full p-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                <LocationPickerMap
+                  locations={formData.lat && formData.lng ? [{ lat: formData.lat, lng: formData.lng, address: formData.location }] : []}
+                  onChange={(locs) => {
+                    if (locs.length > 0) {
+                      setFormData(prev => ({ ...prev, lat: locs[0].lat, lng: locs[0].lng, location: locs[0].address || "Selected Location" }));
+                    } else {
+                      setFormData(prev => ({ ...prev, lat: null, lng: null, location: "" }));
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -231,7 +272,7 @@ export default function OnboardingModal() {
               <Button 
                 className="flex-[2] flex items-center justify-center gap-2" 
                 onClick={handleNext}
-                disabled={step === 1 && (!formData.phone || !formData.dob || !formData.location) || (step === 2 && isMerchant && !formData.nin && !formData.bvn)}
+                disabled={step === 1 && (!formData.phone || !formData.dob) || (step === 2 && isMerchant && !formData.nin && !formData.bvn)}
               >
                 Continue <ChevronRight className="w-4 h-4" />
               </Button>

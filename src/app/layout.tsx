@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 import DevAuthBypass from "@/components/DevAuthBypass";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+import { GlobalAlertDialog } from "@/components/shared/GlobalAlertDialog";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +40,7 @@ export default function RootLayout({
         >
           <StoreProvider>
             {children}
+            <GlobalAlertDialog />
             {/* <DevAuthBypass /> */}
           </StoreProvider>
         </ThemeProvider>

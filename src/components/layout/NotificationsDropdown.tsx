@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Bell, CheckCircle2 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { createClient } from "@/utils/supabase/client";
 
 export default function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const fetchNotifs = async () => {
     try {
@@ -25,11 +29,46 @@ export default function NotificationsDropdown() {
   };
 
   useEffect(() => {
-    fetchNotifs();
-    // In a real app we'd poll or use websockets here
-    const intv = setInterval(fetchNotifs, 15000);
-    return () => clearInterval(intv);
+    // Request browser notification permission on mount
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    fetchNotifs();
+    
+    if (!user?.id) return;
+    
+    const supabase = createClient();
+    const channel = supabase
+      .channel('realtime-notifications')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'Notification', filter: `userId=eq.${user.id}` },
+        (payload) => {
+          fetchNotifs(); // Re-fetch on any change
+          
+          // Trigger native browser notification for new inserts
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const newNotif = payload.new as any;
+            if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+              new Notification(newNotif.title, {
+                body: newNotif.message,
+                icon: "/icon.png" // using PNG for universal Web Notification API compatibility
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const markAsRead = async (id?: string) => {
     try {

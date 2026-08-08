@@ -42,6 +42,10 @@ model User {
   subscriptions     Subscription[]
   merchantListings  MerchantListing[] @relation("MerchantListings")
   ratings           ServiceRating[]   @relation("CustomerRatings")
+  referralCode      String?           @unique
+  referredBy        String?
+  sentMessages      Message[]         @relation("SentMessages")
+  receivedMessages  Message[]         @relation("ReceivedMessages")
 }
 
 model Profile {
@@ -52,6 +56,8 @@ model Profile {
   phone            String
   dob              DateTime
   location         String
+  lat              Float?
+  lng              Float?
   avatarUrl        String?
   nin              String?
   bvn              String?
@@ -68,6 +74,7 @@ model MerchantProfile {
   baseRate           Float    @default(0.0)
   acceptanceRate     Float    @default(100.0)
   internalAgentScore Float    @default(5.0)
+  isAvailable        Boolean  @default(true)
 }
 
 enum JobStatus {
@@ -98,6 +105,9 @@ model Job {
   escrowStatus        EscrowStatus @default(LOCKED)
   amount              Float        @default(0.0)
   description         String?
+  customerAddress     String?      // Stored delivery address
+  customerLat         Float?       // Stored delivery lat
+  customerLng         Float?       // Stored delivery lng
   customerNote        String?      // Additional note from the customer to the service provider
   customerNoteImages  String[]     @default([]) // Reference images attached by the customer
   frequency           String?
@@ -105,6 +115,7 @@ model Job {
   updatedAt           DateTime     @updatedAt
 
   rating              ServiceRating?
+  messages            Message[]
 }
 
 enum WalletType {
@@ -120,6 +131,7 @@ model Wallet {
   availableBalance Float      @default(0.0)
   escrowBalance    Float      @default(0.0)
   updatedAt        DateTime   @updatedAt
+  transactions     WalletTransaction[]
 }
 
 enum SubFrequency {
@@ -196,4 +208,41 @@ model AppSetting {
   id    String @id @default(uuid())
   key   String @unique
   value String
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  senderId  String
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum TxType {
+  CREDIT
+  DEBIT
+  ESCROW
+}
+
+enum TxStatus {
+  COMPLETED
+  PENDING
+  FAILED
+  LOCKED
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  type        TxType
+  status      TxStatus
+  amount      Float
+  description String
+  createdAt   DateTime @default(now())
 }

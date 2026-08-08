@@ -28,7 +28,8 @@ export async function GET() {
         email: dbUser.email,
         role: dbUser.role,
         profileCompleted: dbUser.profileCompleted,
-        profile: dbUser.profile
+        profile: dbUser.profile,
+        referralCode: dbUser.referralCode
       }
     }, { status: 200 });
 
