@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <Link href="/admin/dashboard" className="flex items-center gap-2">
           <img
             src="/icon.png"
-            alt="i-help logo"
+            alt="myIhelp logo"
             className="w-8 h-8 object-contain"
           />
           <span className="font-bold text-lg text-primary tracking-tight">
@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <Link href="/admin/dashboard" className="flex items-center gap-2">
             <img
               src="/icon.png"
-              alt="i-help logo"
+              alt="myIhelp logo"
               className="w-8 h-8 object-contain"
             />
             <span className="font-bold text-xl text-primary tracking-tight">

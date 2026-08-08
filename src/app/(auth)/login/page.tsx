@@ -51,8 +51,12 @@ export default function LoginPage() {
 
   return (
     <div className="w-full transition-all duration-500">
-      <h2 className="text-headline-sm font-bold text-on-surface mb-2">Welcome back</h2>
-      <p className="text-body-md text-on-surface-variant mb-6">Log in to your i-help account.</p>
+      <h2 className="text-headline-sm font-bold text-on-surface mb-2">
+        Welcome back
+      </h2>
+      <p className="text-body-md text-on-surface-variant mb-6">
+        Log in to your myIhelp account.
+      </p>
 
       {errorMsg && (
         <div className="mb-4 p-3 bg-error/10 text-error border border-error/20 rounded-lg text-sm flex items-start gap-2 animate-in fade-in duration-200">
@@ -82,10 +86,17 @@ export default function LoginPage() {
           type="password"
           placeholder="Enter your password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
           disabled={isLoading || isSuccess}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && formData.email && formData.password && !isLoading) {
+            if (
+              e.key === "Enter" &&
+              formData.email &&
+              formData.password &&
+              !isLoading
+            ) {
               handleLogin();
             }
           }}
@@ -94,7 +105,9 @@ export default function LoginPage() {
 
       <Button
         className="w-full mt-8 py-3 text-base relative"
-        disabled={!formData.email || !formData.password || isLoading || isSuccess}
+        disabled={
+          !formData.email || !formData.password || isLoading || isSuccess
+        }
         onClick={handleLogin}
       >
         {isLoading ? (
@@ -115,7 +128,10 @@ export default function LoginPage() {
       <div className="mt-6 text-center">
         <p className="text-sm text-on-surface-variant">
           Don&apos;t have an account?{" "}
-          <a href="/register" className="text-primary font-medium hover:underline">
+          <a
+            href="/register"
+            className="text-primary font-medium hover:underline"
+          >
             Sign up
           </a>
         </p>

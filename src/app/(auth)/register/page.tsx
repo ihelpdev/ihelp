@@ -43,7 +43,10 @@ function RegisterForm() {
   const handleSignup = async () => {
     setErrorMsg(null);
     setIsLoading(true);
-    console.log("[Register] Attempting Supabase signUp with email:", formData.email);
+    console.log(
+      "[Register] Attempting Supabase signUp with email:",
+      formData.email,
+    );
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -63,14 +66,17 @@ function RegisterForm() {
       return;
     }
 
-    console.log("[Register] Supabase signUp succeeded. User ID:", data.user?.id);
+    console.log(
+      "[Register] Supabase signUp succeeded. User ID:",
+      data.user?.id,
+    );
 
     if (data.user) {
       // Sync immediately so the user exists in Prisma
       // Email verification will be handled by Supabase Auth
       await syncUser(data.user.id);
     }
-    
+
     // Proceed to email verification instruction step
     setStep(3);
   };
@@ -90,10 +96,14 @@ function RegisterForm() {
           referredBy: formData.referralCode,
         }),
       });
-      
-      console.log(`[Register] sync-user API responded with status: ${response.status}`);
+
+      console.log(
+        `[Register] sync-user API responded with status: ${response.status}`,
+      );
       if (!response.ok) {
-        console.warn(`[Register] sync-user failed with status ${response.status}. Expected 200.`);
+        console.warn(
+          `[Register] sync-user failed with status ${response.status}. Expected 200.`,
+        );
       } else {
         const json = await response.json();
         console.log(`[Register] sync-user success:`, json);
@@ -107,7 +117,7 @@ function RegisterForm() {
     <div className="w-full">
       {/* Progress Bar */}
       <div className="w-full bg-surface-container h-2 mb-8 rounded-full overflow-hidden">
-        <div 
+        <div
           className="bg-primary h-full transition-all duration-300 ease-in-out"
           style={{ width: `${(step / 3) * 100}%` }}
         />
@@ -115,40 +125,54 @@ function RegisterForm() {
 
       {step === 1 && (
         <div className="transition-all duration-500">
-          <h2 className="text-headline-sm font-bold text-on-surface mb-2">How do you want to use i-help?</h2>
-          <p className="text-body-md text-on-surface-variant mb-6">Select your account type to customize your onboarding experience.</p>
-          
+          <h2 className="text-headline-sm font-bold text-on-surface mb-2">
+            How do you want to use myIhelp?
+          </h2>
+          <p className="text-body-md text-on-surface-variant mb-6">
+            Select your account type to customize your onboarding experience.
+          </p>
+
           <div className="space-y-4">
-            <button 
+            <button
               onClick={() => setRole("CUSTOMER")}
               className={`w-full text-left p-4 rounded-xl border-2 transition-all ${role === "CUSTOMER" ? "border-primary bg-primary-fixed" : "border-outline-variant hover:border-primary"}`}
             >
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-semibold text-on-surface">Customer</h3>
-                  <p className="text-sm text-on-surface-variant mt-1">I want to hire professionals for my tasks.</p>
+                  <p className="text-sm text-on-surface-variant mt-1">
+                    I want to hire professionals for my tasks.
+                  </p>
                 </div>
-                {role === "CUSTOMER" && <CheckCircle2 className="text-primary w-6 h-6" />}
+                {role === "CUSTOMER" && (
+                  <CheckCircle2 className="text-primary w-6 h-6" />
+                )}
               </div>
             </button>
 
-            <button 
+            <button
               onClick={() => setRole("MERCHANT")}
               className={`w-full text-left p-4 rounded-xl border-2 transition-all ${role === "MERCHANT" ? "border-primary bg-primary-fixed" : "border-outline-variant hover:border-primary"}`}
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-semibold text-on-surface">Service Provider (Pro)</h3>
-                  <p className="text-sm text-on-surface-variant mt-1">I want to offer my services and find jobs.</p>
+                  <h3 className="font-semibold text-on-surface">
+                    Service Provider (Pro)
+                  </h3>
+                  <p className="text-sm text-on-surface-variant mt-1">
+                    I want to offer my services and find jobs.
+                  </p>
                 </div>
-                {role === "MERCHANT" && <CheckCircle2 className="text-primary w-6 h-6" />}
+                {role === "MERCHANT" && (
+                  <CheckCircle2 className="text-primary w-6 h-6" />
+                )}
               </div>
             </button>
           </div>
 
-          <Button 
-            className="w-full mt-8 py-3 text-base" 
-            disabled={!role} 
+          <Button
+            className="w-full mt-8 py-3 text-base"
+            disabled={!role}
             onClick={handleNext}
           >
             Continue <ArrowRight className="ml-2 w-5 h-5" />
@@ -158,53 +182,81 @@ function RegisterForm() {
 
       {step === 2 && (
         <div className="transition-all duration-500">
-          <button onClick={handleBack} className="text-sm flex items-center text-on-surface-variant mb-4 hover:text-primary font-medium transition-colors">
+          <button
+            onClick={handleBack}
+            className="text-sm flex items-center text-on-surface-variant mb-4 hover:text-primary font-medium transition-colors"
+          >
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </button>
-          <h2 className="text-headline-sm font-bold text-on-surface mb-6">Create your account</h2>
-          
-          {errorMsg && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{errorMsg}</div>}
+          <h2 className="text-headline-sm font-bold text-on-surface mb-6">
+            Create your account
+          </h2>
+
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {errorMsg}
+            </div>
+          )}
 
           <div className="space-y-5">
-            <Input 
-              label="Full Name" 
+            <Input
+              label="Full Name"
               placeholder="e.g. John Doe"
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
             />
-            <Input 
-              label="Email Address" 
-              type="email" 
+            <Input
+              label="Email Address"
+              type="email"
               placeholder="name@example.com"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
-            <Input 
-              label="Password" 
-              type="password" 
+            <Input
+              label="Password"
+              type="password"
               placeholder="Create a secure password"
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
             />
-            <Input 
-              label="Referral Code (Optional)" 
+            <Input
+              label="Referral Code (Optional)"
               placeholder="Got invited? Enter code here"
               value={formData.referralCode}
-              onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, referralCode: e.target.value })
+              }
             />
           </div>
 
-          <Button 
-            className="w-full mt-8 py-3 text-base" 
-            disabled={!formData.name || !formData.email || !formData.password || isLoading}
+          <Button
+            className="w-full mt-8 py-3 text-base"
+            disabled={
+              !formData.name ||
+              !formData.email ||
+              !formData.password ||
+              isLoading
+            }
             onClick={handleSignup}
           >
             {isLoading ? "Creating..." : "Create Account"}
           </Button>
-          
+
           <div className="mt-6 text-center">
             <p className="text-sm text-on-surface-variant">
-              Already have an account? <a href="/login" className="text-primary font-medium hover:underline">Log in</a>
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="text-primary font-medium hover:underline"
+              >
+                Log in
+              </a>
             </p>
           </div>
         </div>
@@ -213,15 +265,24 @@ function RegisterForm() {
       {step === 3 && (
         <div className="transition-all duration-500 text-center py-8">
           <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-            <span className="material-symbols-outlined text-primary text-4xl" style={{fontVariationSettings: "'FILL' 1"}}>mark_email_unread</span>
+            <span
+              className="material-symbols-outlined text-primary text-4xl"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              mark_email_unread
+            </span>
           </div>
-          <h2 className="text-headline-sm font-bold text-on-surface mb-2">Verify your email</h2>
+          <h2 className="text-headline-sm font-bold text-on-surface mb-2">
+            Verify your email
+          </h2>
           <p className="text-body-md text-on-surface-variant mb-8">
-            We've sent a verification link to <span className="font-semibold text-primary">{formData.email}</span>. 
-            Please check your inbox and click the link to activate your account.
+            We've sent a verification link to{" "}
+            <span className="font-semibold text-primary">{formData.email}</span>
+            . Please check your inbox and click the link to activate your
+            account.
           </p>
-          <Button 
-            className="w-full py-3 text-base" 
+          <Button
+            className="w-full py-3 text-base"
             onClick={() => router.push("/login")}
           >
             Go to Login
@@ -234,7 +295,13 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-8">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
       <RegisterForm />
     </Suspense>
   );

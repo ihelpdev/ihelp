@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
 import MobileUserMenu from "@/components/layout/MobileUserMenu";
-import { MerchantDesktopNav, MerchantMobileNav } from "@/components/layout/MerchantNav";
+import {
+  MerchantDesktopNav,
+  MerchantMobileNav,
+} from "@/components/layout/MerchantNav";
 import MerchantDataLoader from "@/components/layout/MerchantDataLoader";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
 import AuthGuard from "@/components/layout/AuthGuard";
@@ -13,12 +16,18 @@ export default function MerchantLayout({ children }: { children: ReactNode }) {
       <MerchantDataLoader />
       <AuthGuard>
         <header className="sticky top-0 z-50 w-full bg-surface-container-low/80 backdrop-blur-md px-4 md:px-6 py-4 flex items-center border-b border-outline-variant">
-          
           <MerchantDesktopNav />
 
           <h1 className="text-primary font-bold text-headline-sm flex-shrink-0 ml-2 md:ml-0 md:mr-4 lg:mr-8 md:order-first flex items-center gap-2">
-            <img src="/icon.png" alt="i-help logo" className="w-8 h-8 object-contain" />
-            i-help <span className="text-sm font-normal text-on-surface-variant ml-2 hidden sm:inline">Merchant</span>
+            <img
+              src="/icon.png"
+              alt="myIhelp logo"
+              className="w-8 h-8 object-contain"
+            />
+            myIhelp{" "}
+            <span className="text-sm font-normal text-on-surface-variant ml-2 hidden sm:inline">
+              Merchant
+            </span>
           </h1>
 
           <div className="ml-auto flex items-center gap-2 md:gap-4 order-last">
@@ -28,9 +37,7 @@ export default function MerchantLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         <main className="p-6 md:p-8 w-full max-w-7xl mx-auto flex flex-col">
-          <div className="w-full mt-2">
-            {children}
-          </div>
+          <div className="w-full mt-2">{children}</div>
         </main>
         <OnboardingModal />
       </AuthGuard>
