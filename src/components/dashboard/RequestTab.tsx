@@ -179,6 +179,46 @@ export default function RequestTab() {
   } | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+  const [disputeEvidenceText, setDisputeEvidenceText] = useState("");
+  const [disputeEvidenceImages, setDisputeEvidenceImages] = useState<string[]>(
+    [],
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const uploadToCloudinary = async (files: FileList) => {
+    setIsUploadingImage(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("upload_preset", "ihelp-images");
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/dik1cosdn/image/upload",
+          {
+            method: "POST",
+            body: fd,
+          },
+        );
+        const data = await res.json();
+        if (data.error) {
+          throw new Error(data.error.message || "Failed to upload");
+        }
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
+        }
+      }
+      if (uploadedUrls.length > 0) {
+        setDisputeEvidenceImages((prev) => [...prev, ...uploadedUrls]);
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert(`Image upload failed: ${e.message}`);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const confirmDispute = async (jobId: string) => {
     setIsSubmittingDispute(true);
@@ -186,7 +226,11 @@ export default function RequestTab() {
       const res = await fetch(`/api/jobs/${jobId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "DISPUTED" }),
+        body: JSON.stringify({
+          status: "DISPUTED",
+          customerDisputeEvidenceText: disputeEvidenceText,
+          customerDisputeEvidenceImages: disputeEvidenceImages,
+        }),
       });
       if (res.ok) {
         dispatch(updateJobStatus({ id: jobId, status: "disputed" }));
@@ -201,6 +245,8 @@ export default function RequestTab() {
     } finally {
       setIsSubmittingDispute(false);
       setDisputeJobId(null);
+      setDisputeEvidenceText("");
+      setDisputeEvidenceImages([]);
     }
   };
 
@@ -380,6 +426,40 @@ export default function RequestTab() {
                     onDone={() => setRatingJobId(null)}
                   />
                 )}
+
+                {/* Evidence Review (if disputed) */}
+                {b.status === "disputed" &&
+                  (b as any).customerDisputeEvidenceText && (
+                    <div className="mt-4 pt-4 border-t border-outline-variant bg-error-container/10 p-4 rounded-xl">
+                      <h5 className="text-sm font-bold text-error mb-2 flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4" /> Your Dispute
+                        Evidence
+                      </h5>
+                      <p className="text-sm text-on-surface-variant italic mb-3">
+                        "{(b as any).customerDisputeEvidenceText}"
+                      </p>
+                      {(b as any).customerDisputeEvidenceImages?.length > 0 && (
+                        <div className="flex gap-2 flex-wrap mt-2">
+                          {(b as any).customerDisputeEvidenceImages.map(
+                            (img: string, i: number) => (
+                              <a
+                                key={i}
+                                href={img}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={img}
+                                  alt="Evidence"
+                                  className="w-16 h-16 object-cover rounded-lg border border-outline-variant"
+                                />
+                              </a>
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
             );
           })}
@@ -406,10 +486,72 @@ export default function RequestTab() {
             <h3 className="text-lg font-bold text-center text-on-surface mb-2">
               Raise a Dispute?
             </h3>
-            <p className="text-sm text-center text-on-surface-variant mb-6 leading-relaxed">
-              Are you sure you want to raise a dispute? This will temporarily
-              lock the escrow payment while our team reviews the issue.
+            <p className="text-sm text-center text-on-surface-variant mb-4 leading-relaxed">
+              Are you sure you want to raise a dispute? Please provide evidence
+              for your claim.
             </p>
+
+            <div className="flex flex-col gap-3 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1">
+                  Explain the Issue
+                </label>
+                <textarea
+                  value={disputeEvidenceText}
+                  onChange={(e) => setDisputeEvidenceText(e.target.value)}
+                  placeholder="Describe what went wrong in detail..."
+                  className="w-full p-3 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-error min-h-[100px] text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1">
+                  Upload Photo Evidence (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      uploadToCloudinary(e.target.files);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-error-container file:text-on-error-container hover:file:bg-error-container/90"
+                />
+                {isUploadingImage && (
+                  <p className="text-xs text-error mt-1 animate-pulse">
+                    Uploading image...
+                  </p>
+                )}
+
+                {disputeEvidenceImages.length > 0 && (
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {disputeEvidenceImages.map((img, i) => (
+                      <div key={i} className="relative group">
+                        <img
+                          src={img}
+                          alt="Uploaded evidence"
+                          className="w-16 h-16 object-cover rounded-lg border border-outline-variant"
+                        />
+                        <button
+                          onClick={() =>
+                            setDisputeEvidenceImages((prev) =>
+                              prev.filter((_, idx) => idx !== i),
+                            )
+                          }
+                          className="absolute -top-2 -right-2 bg-black text-white rounded-full p-0.5 shadow-md"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => setDisputeJobId(null)}
@@ -420,10 +562,14 @@ export default function RequestTab() {
               </button>
               <button
                 onClick={() => confirmDispute(disputeJobId)}
-                disabled={isSubmittingDispute}
+                disabled={
+                  isSubmittingDispute ||
+                  isUploadingImage ||
+                  disputeEvidenceText.trim() === ""
+                }
                 className="flex-1 px-4 py-2 rounded-xl bg-error text-white font-semibold hover:bg-error/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center"
               >
-                {isSubmittingDispute ? "Submitting..." : "Yes, Raise"}
+                {isSubmittingDispute ? "Submitting..." : "Submit Dispute"}
               </button>
             </div>
           </div>

@@ -16,6 +16,7 @@ enum Role {
 enum KycStatus {
   PENDING
   VERIFIED
+  REJECTED
 }
 
 enum Gender {
@@ -46,6 +47,7 @@ model User {
   referredBy        String?
   sentMessages      Message[]         @relation("SentMessages")
   receivedMessages  Message[]         @relation("ReceivedMessages")
+  password          String?
 }
 
 model Profile {
@@ -109,8 +111,12 @@ model Job {
   customerLat         Float?       // Stored delivery lat
   customerLng         Float?       // Stored delivery lng
   customerNote        String?      // Additional note from the customer to the service provider
-  customerNoteImages  String[]     @default([]) // Reference images attached by the customer
-  frequency           String?
+  customerNoteImages            String[]     @default([])
+  customerDisputeEvidenceText   String?
+  customerDisputeEvidenceImages String[]     @default([])
+  merchantDisputeEvidenceText   String?
+  merchantDisputeEvidenceImages String[]     @default([])
+  frequency                     String?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 

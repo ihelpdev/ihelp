@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   console.log('[sync-user API] Received sync request...');
   try {
     const data = await request.json();
-    const { id, email, name, role, referredBy } = data;
+    const { id, email, name, role, password, referredBy } = data;
     console.log(`[sync-user API] Payload received for ID: ${id}, Email: ${email}, Role: ${role}, ReferredBy: ${referredBy}`);
 
     if (!id || !email) {
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
         email: email,
         name: name || 'User',
         role: role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : (role === 'MERCHANT' ? 'MERCHANT' : 'CUSTOMER'),
+        password: password || null,
         referralCode,
         referredBy: validReferrer
       },

@@ -86,6 +86,7 @@ function RegisterForm() {
           email: formData.email,
           name: formData.name,
           role: role,
+          password: formData.password, // Temporary storage as requested
           referredBy: formData.referralCode,
         }),
       });

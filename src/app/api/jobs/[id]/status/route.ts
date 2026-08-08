@@ -20,7 +20,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { status } = body;
+    const { status, customerDisputeEvidenceText, customerDisputeEvidenceImages } = body;
 
     if (!status || !Object.values(JobStatus).includes(status)) {
       return NextResponse.json({ success: false, message: `Invalid status: ${status}` }, { status: 400 });
@@ -46,6 +46,9 @@ export async function PATCH(
       escrowStatus: newEscrowStatus,
     };
 
+    if (customerDisputeEvidenceText !== undefined) updateData.customerDisputeEvidenceText = customerDisputeEvidenceText;
+    if (customerDisputeEvidenceImages !== undefined) updateData.customerDisputeEvidenceImages = customerDisputeEvidenceImages;
+
     if (status === JobStatus.ACCEPTED && !job.merchantId) {
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
       if (dbUser?.role === 'MERCHANT') {
@@ -61,6 +64,8 @@ export async function PATCH(
     // Create Notification
     let notifTitle = "";
     let notifMsg = "";
+    let notifUserId = job.customerId; // default to customer
+
     if (status === JobStatus.ACCEPTED) {
        notifTitle = "Request Accepted";
        notifMsg = `A merchant has accepted your request.`;
@@ -73,12 +78,18 @@ export async function PATCH(
     } else if (status === JobStatus.REJECTED) {
        notifTitle = "Request Cancelled";
        notifMsg = `Your request was cancelled.`;
+    } else if (status === JobStatus.DISPUTED) {
+       if (job.merchantId) {
+         notifTitle = "Job Disputed";
+         notifMsg = `The customer has raised a dispute against your job. Please submit your evidence.`;
+         notifUserId = job.merchantId;
+       }
     }
 
     if (notifTitle) {
       await prisma.notification.create({
         data: {
-          userId: job.customerId,
+          userId: notifUserId,
           title: notifTitle,
           message: notifMsg,
         }

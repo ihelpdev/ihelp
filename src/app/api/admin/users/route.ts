@@ -39,12 +39,39 @@ export async function PUT(req: Request) {
     const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
     if (currentUser?.role !== 'SUPER_ADMIN') return NextResponse.json({ success: false }, { status: 403 });
 
-    const { id, name, role, kycStatus } = await req.json();
+    const { id, name, role, kycStatus, noteToUser } = await req.json();
+
+    const existingTargetUser = await prisma.user.findUnique({ where: { id } });
 
     const updated = await prisma.user.update({
       where: { id },
       data: { name, role, kycStatus }
     });
+
+    // Handle Notifications
+    if (existingTargetUser) {
+      // 1. If KYC Status changed
+      if (existingTargetUser.kycStatus !== kycStatus) {
+        await prisma.notification.create({
+          data: {
+            userId: id,
+            title: 'Account Status Updated',
+            message: `Your account KYC status has been updated to ${kycStatus}.`,
+          }
+        });
+      }
+
+      // 2. If a custom note was provided
+      if (noteToUser && noteToUser.trim() !== '') {
+        await prisma.notification.create({
+          data: {
+            userId: id,
+            title: 'Message from Admin',
+            message: noteToUser.trim(),
+          }
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
