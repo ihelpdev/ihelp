@@ -79,7 +79,7 @@ export default function SubscriptionsPage() {
                  <div>
                    <h3 className="font-bold text-on-surface">{sub.baseService}</h3>
                    <div className="flex items-center gap-2 mt-1">
-                     <Badge variant={sub.isActive ? 'success' : 'secondary'} className="text-[10px]">
+                     <Badge variant={sub.isActive ? 'success' : 'default'} className="text-[10px]">
                        {sub.isActive ? 'ACTIVE' : 'PAUSED'}
                      </Badge>
                      <span className="text-xs font-semibold text-on-surface-variant capitalize">{sub.frequency.toLowerCase()}</span>
