@@ -55,9 +55,9 @@ model Profile {
   userId           String    @unique
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   gender           Gender
-  phone            String
-  dob              DateTime
-  location         String
+  phone            String?
+  dob              DateTime?
+  location         String?
   lat              Float?
   lng              Float?
   avatarUrl        String?

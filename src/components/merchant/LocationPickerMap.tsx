@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "re
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
-import { X } from "lucide-react";
+import { X, LocateFixed, Loader2, MapPinOff } from "lucide-react";
 import L from "leaflet";
 import MapSearchBar from "@/components/ui/MapSearchBar";
 
@@ -43,6 +43,9 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
   const [mounted, setMounted] = useState(false);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<L.Map | null>(null);
+  
+  type LocateStatus = "idle" | "loading" | "found" | "denied" | "unavailable";
+  const [locateStatus, setLocateStatus] = useState<LocateStatus>("idle");
 
   useEffect(() => {
     setMounted(true);
@@ -67,6 +70,35 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
     const newLocs = [...locations];
     newLocs[index] = { ...newLocs[index], address: newAddress };
     onChange(newLocs);
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      setLocateStatus("unavailable");
+      setTimeout(() => setLocateStatus("idle"), 3000);
+      return;
+    }
+    setLocateStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const newLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLoc(newLoc);
+        if (mapRef.current) {
+          mapRef.current.flyTo(newLoc, 15, { duration: 1.5 });
+        }
+        setLocateStatus("found");
+        setTimeout(() => setLocateStatus("idle"), 3500);
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocateStatus("denied");
+        } else {
+          setLocateStatus("unavailable");
+        }
+        setTimeout(() => setLocateStatus("idle"), 4000);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   if (!mounted) return <div className="h-[300px] w-full bg-surface-container rounded-xl animate-pulse" />;
@@ -110,9 +142,30 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
             </Marker>
           ))}
         </MapContainer>
-        <div className="absolute bottom-4 right-4 bg-surface p-2 rounded-lg shadow text-xs font-semibold z-[400] text-on-surface pointer-events-none">
+        <div className="absolute bottom-4 left-4 bg-surface px-3 py-2 rounded-lg shadow text-xs font-semibold z-[400] text-on-surface pointer-events-none">
           Click map to add location
         </div>
+
+        {/* Locate Me Button */}
+        <button
+          type="button"
+          onClick={handleLocateMe}
+          disabled={locateStatus === "loading"}
+          className={`absolute bottom-4 right-4 z-[400] w-10 h-10 border rounded-xl shadow-md flex items-center justify-center transition disabled:opacity-60 ${
+            locateStatus === "found"
+              ? "bg-primary text-on-primary border-primary"
+              : "bg-surface-container-lowest text-primary border-outline-variant hover:bg-surface-container"
+          }`}
+          title="Locate me"
+        >
+          {locateStatus === "loading" ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : locateStatus === "denied" ? (
+            <MapPinOff className="w-5 h-5 text-error" />
+          ) : (
+            <LocateFixed className="w-5 h-5" />
+          )}
+        </button>
 
         {/* Map Search Bar */}
         <div className="absolute top-4 right-4 z-[1000] max-w-[320px] w-full ml-auto">

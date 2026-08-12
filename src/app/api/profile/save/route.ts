@@ -11,13 +11,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log(request, error, user)
-
     const payload = await request.json();
+    const isPartial = payload.isPartial === true;
 
     // Verify user exists in database first
     const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-    console.log({ dbUser });
     if (!dbUser) {
       return NextResponse.json({ success: false, message: 'User not found in DB' }, { status: 404 });
     }
@@ -29,36 +27,38 @@ export async function POST(request: Request) {
         where: { userId: user.id },
         update: {
           gender: payload.gender,
-          phone: payload.phone,
-          dob: new Date(payload.dob),
-          location: payload.location,
+          phone: payload.phone || null,
+          dob: payload.dob ? new Date(payload.dob) : null,
+          location: payload.location || null,
           lat: payload.lat || null,
           lng: payload.lng || null,
-          avatarUrl: payload.avatarUrl,
+          avatarUrl: payload.avatarUrl || null,
           nin: payload.nin || null,
           bvn: payload.bvn || null,
           passportImageUrl: payload.passportImageUrl || null,
         },
         create: {
           userId: user.id,
-          gender: payload.gender,
-          phone: payload.phone,
-          dob: new Date(payload.dob),
-          location: payload.location,
+          gender: payload.gender || "OTHER",
+          phone: payload.phone || null,
+          dob: payload.dob ? new Date(payload.dob) : null,
+          location: payload.location || null,
           lat: payload.lat || null,
           lng: payload.lng || null,
-          avatarUrl: payload.avatarUrl,
+          avatarUrl: payload.avatarUrl || null,
           nin: payload.nin || null,
           bvn: payload.bvn || null,
           passportImageUrl: payload.passportImageUrl || null,
         }
       });
 
-      // Update the user's profileCompleted flag
-      await tx.user.update({
-        where: { id: user.id },
-        data: { profileCompleted: true }
-      });
+      // Update the user's profileCompleted flag only if this is a complete submission
+      if (!isPartial) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { profileCompleted: true }
+        });
+      }
     });
 
     // Fetch the freshly updated user + profile to return to the client

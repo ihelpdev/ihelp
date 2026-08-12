@@ -56,9 +56,21 @@ export default function OnboardingModal() {
   const handleNext = () => setStep(s => (s + 1) as 1 | 2 | 3);
   const handleBack = () => setStep(s => (s - 1) as 1 | 2 | 3);
 
-  const handleClose = () => {
-    setSkipped(true);
-    dispatch({ type: "auth/setShowProfileModal", payload: false });
+  const handleClose = async () => {
+    setLoading(true);
+    try {
+      await fetch("/api/profile/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, isPartial: true })
+      });
+    } catch (err) {
+      console.log("Failed to save partial profile:", err);
+    } finally {
+      setLoading(false);
+      setSkipped(true);
+      dispatch({ type: "auth/setShowProfileModal", payload: false });
+    }
   };
 
   const handleSubmit = async () => {
