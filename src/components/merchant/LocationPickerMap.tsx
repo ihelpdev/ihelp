@@ -1,13 +1,24 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
+import "leaflet-gesture-handling/dist/leaflet-gesture-handling.css";
+import { GestureHandling } from "leaflet-gesture-handling";
 import { X, LocateFixed, Loader2, MapPinOff } from "lucide-react";
 import L from "leaflet";
 import MapSearchBar from "@/components/ui/MapSearchBar";
+
+L.Map.addInitHook("addHandler", "gestureHandling", GestureHandling);
 
 export type LocationPoint = {
   lat: number;
@@ -21,7 +32,13 @@ interface LocationPickerProps {
 }
 
 // Helper to recenter the map when user location is found
-function RecenterMap({ center, zoom }: { center: { lat: number; lng: number }; zoom: number }) {
+function RecenterMap({
+  center,
+  zoom,
+}: {
+  center: { lat: number; lng: number };
+  zoom: number;
+}) {
   const map = useMap();
   useEffect(() => {
     map.flyTo(center, zoom, { duration: 1.5 });
@@ -30,20 +47,33 @@ function RecenterMap({ center, zoom }: { center: { lat: number; lng: number }; z
 }
 
 // Internal component for handling map clicks
-function ClickableMap({ onAddLocation }: { onAddLocation: (loc: LocationPoint) => void }) {
+function ClickableMap({
+  onAddLocation,
+}: {
+  onAddLocation: (loc: LocationPoint) => void;
+}) {
   useMapEvents({
     click(e) {
-      onAddLocation({ lat: e.latlng.lat, lng: e.latlng.lng, address: `Lat: ${e.latlng.lat.toFixed(4)}, Lng: ${e.latlng.lng.toFixed(4)}` });
+      onAddLocation({
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+        address: `Lat: ${e.latlng.lat.toFixed(4)}, Lng: ${e.latlng.lng.toFixed(4)}`,
+      });
     },
   });
   return null;
 }
 
-export default function LocationPickerMap({ locations, onChange }: LocationPickerProps) {
+export default function LocationPickerMap({
+  locations,
+  onChange,
+}: LocationPickerProps) {
   const [mounted, setMounted] = useState(false);
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
   const mapRef = useRef<L.Map | null>(null);
-  
+
   type LocateStatus = "idle" | "loading" | "found" | "denied" | "unavailable";
   const [locateStatus, setLocateStatus] = useState<LocateStatus>("idle");
 
@@ -51,9 +81,10 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
     setMounted(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (pos) =>
+          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
         (err) => console.warn("Geolocation failed", err),
-        { timeout: 10000 }
+        { timeout: 10000 },
       );
     }
   }, []);
@@ -97,27 +128,33 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
         }
         setTimeout(() => setLocateStatus("idle"), 4000);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
-  if (!mounted) return <div className="h-[300px] w-full bg-surface-container rounded-xl animate-pulse" />;
+  if (!mounted)
+    return (
+      <div className="h-[300px] w-full bg-surface-container rounded-xl animate-pulse" />
+    );
 
   // If there are existing locations, focus on the first one. Otherwise fallback to user loc or default
-  const fallbackCenter = userLoc || { lat: 9.0820, lng: 8.6753 };
-  const center = locations.length > 0 
-    ? { lat: locations[0].lat, lng: locations[0].lng }
-    : fallbackCenter;
-    
-  const zoom = locations.length > 0 ? 15 : (userLoc ? 15 : 6);
+  const fallbackCenter = userLoc || { lat: 9.082, lng: 8.6753 };
+  const center =
+    locations.length > 0
+      ? { lat: locations[0].lat, lng: locations[0].lng }
+      : fallbackCenter;
+
+  const zoom = locations.length > 0 ? 15 : userLoc ? 15 : 6;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="h-[300px] w-full rounded-xl overflow-hidden border border-outline-variant relative z-0">
-        <MapContainer 
-          center={center} 
-          zoom={zoom} 
-          scrollWheelZoom={false} 
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          scrollWheelZoom={false}
+          /* @ts-ignore - gestureHandling is added by leaflet-gesture-handling but not in react-leaflet types */
+          gestureHandling={true}
           style={{ height: "100%", width: "100%" }}
           ref={mapRef}
         >
@@ -132,7 +169,7 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
               <Popup>
                 {loc.address || `Location ${idx + 1}`}
                 <br />
-                <button 
+                <button
                   onClick={() => handleRemoveLocation(idx)}
                   className="mt-2 text-xs text-error font-medium"
                 >
@@ -169,7 +206,7 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
 
         {/* Map Search Bar */}
         <div className="absolute top-4 right-4 z-[1000] max-w-[320px] w-full ml-auto">
-          <MapSearchBar 
+          <MapSearchBar
             onLocationSelect={(lat, lng) => {
               if (mapRef.current) {
                 mapRef.current.flyTo({ lat, lng }, 15, { duration: 1.5 });
@@ -181,17 +218,27 @@ export default function LocationPickerMap({ locations, onChange }: LocationPicke
 
       {locations.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Selected Locations ({locations.length})</span>
+          <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+            Selected Locations ({locations.length})
+          </span>
           <div className="flex flex-col gap-2">
             {locations.map((loc, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant text-sm w-full">
-                <input 
+              <div
+                key={idx}
+                className="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant text-sm w-full"
+              >
+                <input
                   value={loc.address || ""}
                   onChange={(e) => handleUpdateAddress(idx, e.target.value)}
                   className="flex-1 bg-transparent border-b border-outline-variant focus:border-primary outline-none px-1 py-0.5 text-on-surface"
                   placeholder="Enter location name or address"
                 />
-                <button type="button" onClick={() => handleRemoveLocation(idx)} className="text-on-surface-variant hover:text-error shrink-0" title="Remove Location">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveLocation(idx)}
+                  className="text-on-surface-variant hover:text-error shrink-0"
+                  title="Remove Location"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>

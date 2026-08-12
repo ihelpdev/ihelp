@@ -5,6 +5,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
+import "leaflet-gesture-handling/dist/leaflet-gesture-handling.css";
+import { GestureHandling } from "leaflet-gesture-handling";
+
+// @ts-ignore
+L.Map.addInitHook("addHandler", "gestureHandling", GestureHandling);
 import {
   X,
   Navigation,
@@ -206,7 +211,8 @@ export default function InAppRoutingMap({
     mapInstanceRef.current = L.map(mapRef.current, {
       zoomControl: false,
       attributionControl: false,
-    }).setView([startLoc.lat, startLoc.lng], 13);
+      gestureHandling: true,
+    } as L.MapOptions).setView([startLoc.lat, startLoc.lng], 13);
 
     L.control
       .attribution({ prefix: false, position: "bottomleft" })
