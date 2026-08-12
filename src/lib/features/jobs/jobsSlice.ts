@@ -21,6 +21,9 @@ export interface Job {
   merchantPhone?:      string
   customerNote?:       string | null
   customerNoteImages?: string[]
+  customerAddress?:    string | null
+  customerLat?:        number | null
+  customerLng?:        number | null
 }
 
 interface JobsState {

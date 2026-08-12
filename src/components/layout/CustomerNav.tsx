@@ -2,22 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Calendar, Wallet, User, Repeat } from "lucide-react";
+import { Compass, Calendar, Wallet, User, Repeat, MessageSquare } from "lucide-react";
 
 const TABS = [
   { href: "/customer/dashboard", label: "Explore", icon: <Compass className="w-5 h-5" /> },
   { href: "/customer/requests", label: "Requests", icon: <Calendar className="w-5 h-5" /> },
+  { href: "/customer/chats",    label: "Chats",    icon: <MessageSquare className="w-5 h-5" /> },
   { href: "/customer/subscriptions", label: "Subs", icon: <Repeat className="w-5 h-5" /> },
-  { href: "/customer/wallet", label: "Wallet", icon: <Wallet className="w-5 h-5" /> },
+  { href: "/customer/wallet",  label: "Wallet",  icon: <Wallet className="w-5 h-5" /> },
   { href: "/customer/profile", label: "Profile", icon: <User className="w-5 h-5" /> },
 ];
+
+const DESKTOP_TABS = [
+  { href: "/customer/dashboard", label: "Explore", icon: <Compass className="w-5 h-5" /> },
+  { href: "/customer/requests", label: "Requests", icon: <Calendar className="w-5 h-5" /> },
+  { href: "/customer/chats",    label: "Chats",    icon: <MessageSquare className="w-5 h-5" /> },
+  { href: "/customer/subscriptions", label: "Subs", icon: <Repeat className="w-5 h-5" /> },
+  { href: "/customer/wallet",  label: "Wallet",  icon: <Wallet className="w-5 h-5" /> },
+  { href: "/customer/profile", label: "Profile", icon: <User className="w-5 h-5" /> },
+];
+
 
 export function CustomerDesktopNav() {
   const pathname = usePathname();
 
   return (
     <nav className="hidden md:flex flex-1 items-center gap-1 lg:gap-2 px-2 overflow-x-auto no-scrollbar">
-      {TABS.map(({ href, label, icon }) => {
+      {DESKTOP_TABS.map(({ href, label, icon }) => {
         const isActive = pathname === href || (href === "/customer/dashboard" && pathname === "/customer/explore");
         return (
           <Link

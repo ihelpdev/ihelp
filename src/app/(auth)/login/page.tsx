@@ -38,15 +38,23 @@ export default function LoginPage() {
     // Determine where to route based on metadata role
     const role = data.user?.user_metadata?.role;
 
+    let destination = "/customer/dashboard";
+    if (role === "MERCHANT") {
+      destination = "/merchant/dashboard";
+    } else if (role === "SUPER_ADMIN" || role === "ADMIN") {
+      destination = "/admin/dashboard";
+    }
+
     setIsSuccess(true);
 
-    if (role === "MERCHANT") {
-      router.replace("/merchant/dashboard");
-    } else if (role === "SUPER_ADMIN" || role === "ADMIN") {
-      router.replace("/admin/dashboard");
-    } else {
-      router.replace("/customer/dashboard");
-    }
+    // Attempt soft navigation first
+    router.replace(destination);
+
+    // Hard-redirect fallback: if Next.js router.replace() stalls (e.g. middleware
+    // timeout), this ensures the user is never stuck on the login page forever.
+    setTimeout(() => {
+      window.location.href = destination;
+    }, 3000);
   };
 
   return (

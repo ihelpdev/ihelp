@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 import { JobStatus } from '@prisma/client';
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { user, error } = await getAuthUser();
 
     if (error || !user) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -26,7 +25,7 @@ export async function GET(req: Request) {
       ? {
           OR: [
             { merchantId: user.id },
-            { merchantId: null, serviceType: 'subscription' }
+            { merchantId: null, status: 'PENDING' as JobStatus }
           ]
         }
       : { customerId: user.id };

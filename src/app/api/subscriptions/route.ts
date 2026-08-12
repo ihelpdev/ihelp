@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
     if (!user) return NextResponse.json({ success: false }, { status: 401 });
 
     const subscriptions = await prisma.subscription.findMany({
@@ -21,8 +20,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
     if (!user) return NextResponse.json({ success: false }, { status: 401 });
 
     const { id, isActive } = await req.json();

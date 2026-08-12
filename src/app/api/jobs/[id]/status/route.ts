@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 import { JobStatus, EscrowStatus } from '@prisma/client';
 
@@ -9,8 +9,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { user, error } = await getAuthUser();
 
     if (error) {
       return NextResponse.json({ success: false, message: `Auth error: ${error.message}` }, { status: 401 });

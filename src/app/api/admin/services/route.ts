@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
 const PAGE_SIZE = 20;
 
 /** Admin-only guard — returns the verified DB user or null */
 async function getAdminUser() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await getAuthUser();
   if (!user) return null;
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (dbUser?.role !== 'SUPER_ADMIN') return null;

@@ -19,7 +19,7 @@ export default function NotificationsDropdown() {
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.data || []);
-        setUnreadCount((data.data || []).filter((n: any) => !n.read).length);
+        setUnreadCount((data.data || []).filter((n: any) => !n.isRead).length);
       }
     } catch (err) {
       console.error(err);
@@ -86,7 +86,7 @@ export default function NotificationsDropdown() {
   return (
     <div className="relative">
       <button 
-        onClick={() => { setOpen(!open); if (unreadCount > 0 && !open) markAsRead(); }}
+        onClick={() => setOpen(!open)}
         className="relative p-2 rounded-full text-on-surface hover:bg-surface-container transition-colors"
       >
         <Bell className="w-6 h-6" />
@@ -113,16 +113,24 @@ export default function NotificationsDropdown() {
               ) : (
                 <div className="divide-y divide-outline-variant">
                   {notifications.map((n) => (
-                    <div key={n.id} className={`p-4 flex gap-3 ${!n.read ? 'bg-primary/5' : ''}`}>
+                    <div key={n.id} className={`p-4 flex gap-3 ${!n.isRead ? 'bg-primary/5' : ''}`}>
                       <div className="mt-0.5 shrink-0">
-                         <CheckCircle2 className={`w-5 h-5 ${!n.read ? 'text-primary' : 'text-on-surface-variant'}`} />
+                         <CheckCircle2 className={`w-5 h-5 ${!n.isRead ? 'text-primary' : 'text-on-surface-variant'}`} />
                       </div>
                       <div className="flex-1">
-                        <h4 className={`text-sm ${!n.read ? 'font-bold text-on-surface' : 'font-medium text-on-surface-variant'}`}>{n.title}</h4>
-                        <p className={`text-xs mt-0.5 ${!n.read ? 'text-on-surface-variant' : 'text-on-surface-variant/80'}`}>{n.message}</p>
+                        <h4 className={`text-sm ${!n.isRead ? 'font-bold text-on-surface' : 'font-medium text-on-surface-variant'}`}>{n.title}</h4>
+                        <p className={`text-xs mt-0.5 ${!n.isRead ? 'text-on-surface-variant' : 'text-on-surface-variant/80'}`}>{n.message}</p>
                         <div className="text-[10px] text-on-surface-variant mt-2">
                           {new Date(n.createdAt).toLocaleDateString()} {new Date(n.createdAt).toLocaleTimeString()}
                         </div>
+                        {!n.isRead && (
+                          <button
+                            onClick={() => markAsRead(n.id)}
+                            className="text-[10px] text-primary font-semibold mt-1 hover:underline"
+                          >
+                            Mark as read
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

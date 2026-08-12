@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { getAuthUser } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { SubFrequency } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    const { user, error } = await getAuthUser();
 
     if (error || !user) {
       return NextResponse.json(

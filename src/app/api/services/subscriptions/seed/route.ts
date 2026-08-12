@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 import servicesRaw from '@/mockup/services.json';
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
 
     if (!user) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 

@@ -317,7 +317,8 @@ export default function JobsTab() {
                 </div>
               )}
 
-              {["accepted", "en_route"].includes(job.status) && (
+              {/* Accepted: show Head to Location — sets en_route AND opens navigation */}
+              {job.status === "accepted" && (
                 <div className="flex gap-3 pt-4 border-t border-outline-variant mt-4">
                   <button
                     onClick={() =>
@@ -333,24 +334,38 @@ export default function JobsTab() {
                   </button>
                   <button
                     disabled={updatingId === job.id}
-                    onClick={() => handleStatusUpdate(job.id, "en_route")}
+                    onClick={async () => {
+                      await handleStatusUpdate(job.id, "en_route");
+                      handleNavigate(job);
+                    }}
                     className="flex-1 bg-primary text-on-primary py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
                   >
                     <Navigation className="w-4 h-4" />{" "}
-                    {updatingId === job.id
-                      ? "Updating..."
-                      : "Head to Location (En Route)"}
+                    {updatingId === job.id ? "Updating..." : "Head to Location"}
                   </button>
                 </div>
               )}
 
+              {/* En Route: show Navigate map + Mark Completed */}
               {job.status === "en_route" && (
                 <div className="flex gap-3 pt-4 border-t border-outline-variant mt-4">
+                  <button
+                    onClick={() =>
+                      setChatJob({
+                        id: job.id,
+                        name: job.serviceName,
+                        customerId: job.customerId,
+                      })
+                    }
+                    className="bg-surface-container-high text-on-surface py-2.5 px-4 rounded-xl text-sm font-semibold hover:bg-surface-container-highest transition-colors flex justify-center items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => handleNavigate(job)}
                     className="flex-1 bg-surface-container-high text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container-highest transition-colors flex justify-center items-center gap-2"
                   >
-                    <MapIcon className="w-4 h-4" /> Navigate
+                    <MapIcon className="w-4 h-4" /> Open Navigation
                   </button>
                   <button
                     disabled={updatingId === job.id}
@@ -358,9 +373,7 @@ export default function JobsTab() {
                     className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4" />{" "}
-                    {updatingId === job.id
-                      ? "Updating..."
-                      : "Mark as Completed"}
+                    {updatingId === job.id ? "Updating..." : "Mark Completed"}
                   </button>
                 </div>
               )}

@@ -18,13 +18,8 @@ export function Header() {
         <div className="flex items-center gap-sm">
           <ThemeToggle />
           <Link href="/login">
-            <button className="text-primary hover:bg-primary/5 px-lg py-sm rounded font-label-lg transition-all duration-150 active:scale-95 border border-primary/20">
+            <button className="bg-primary text-on-primary px-lg py-sm rounded font-label-lg transition-all duration-150 active:scale-95 hover:bg-primary/90">
               Log In
-            </button>
-          </Link>
-          <Link href="/register">
-            <button className="bg-primary text-on-primary px-lg py-sm rounded font-label-lg transition-all duration-150 active:scale-95">
-              Sign Up
             </button>
           </Link>
         </div>

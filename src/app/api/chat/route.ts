@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: Request) {
@@ -8,9 +8,8 @@ export async function GET(req: Request) {
     const jobId = url.searchParams.get('jobId');
     if (!jobId) return NextResponse.json({ success: false }, { status: 400 });
 
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return NextResponse.json({ success: false }, { status: 401 });
+    const { user } = await getAuthUser();
+    if (!user) return NextResponse.json({ success: false }, { status: 401 });
 
     const messages = await prisma.message.findMany({
       where: { jobId },
@@ -26,9 +25,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return NextResponse.json({ success: false }, { status: 401 });
+    const { user } = await getAuthUser();
+    if (!user) return NextResponse.json({ success: false }, { status: 401 });
 
     const { jobId, content, receiverId } = await req.json();
 

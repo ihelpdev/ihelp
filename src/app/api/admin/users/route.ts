@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
 
     if (!user) return NextResponse.json({ success: false }, { status: 401 });
     
@@ -33,8 +32,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
     if (!user) return NextResponse.json({ success: false }, { status: 401 });
     const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
     if (currentUser?.role !== 'SUPER_ADMIN') return NextResponse.json({ success: false }, { status: 403 });
@@ -81,8 +79,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getAuthUser();
     if (!user) return NextResponse.json({ success: false }, { status: 401 });
     const currentUser = await prisma.user.findUnique({ where: { id: user.id } });
     if (currentUser?.role !== 'SUPER_ADMIN') return NextResponse.json({ success: false }, { status: 403 });
